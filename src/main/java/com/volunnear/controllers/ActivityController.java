@@ -30,12 +30,12 @@ public class ActivityController {
     }
 
     @PostMapping(value = Routes.JOIN_TO_ACTIVITY)
-    public ResponseEntity<?> addVolunteerToActivity(@RequestParam Long id, Principal principal) {
+    public ResponseEntity<?> addVolunteerToActivity(@RequestParam Integer id, Principal principal) {
         return activityService.addVolunteerToActivity(principal, id);
     }
 
     @PutMapping(value = Routes.UPDATE_ACTIVITY_INFORMATION, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateActivityInformation(@RequestParam Long idOfActivity,
+    public ResponseEntity<?> updateActivityInformation(@RequestParam Integer idOfActivity,
                                                        @RequestBody AddActivityRequestDTO activityRequestDTO, Principal principal) {
         return activityService.updateActivityInformation(idOfActivity, activityRequestDTO, principal);
     }
@@ -73,12 +73,12 @@ public class ActivityController {
     }
 
     @DeleteMapping(value = Routes.DELETE_CURRENT_ACTIVITY_BY_ID)
-    public ResponseEntity<?> deleteActivityById(@RequestParam Long id, Principal principal) {
+    public ResponseEntity<?> deleteActivityById(@RequestParam Integer id, Principal principal) {
         return activityService.deleteActivityById(id, principal);
     }
 
     @DeleteMapping(value = Routes.LEAVE_FROM_ACTIVITY_BY_VOLUNTEER)
-    public ResponseEntity<?> deleteVolunteerFromActivity(@RequestParam Long id, Principal principal) {
+    public ResponseEntity<?> deleteVolunteerFromActivity(@RequestParam Integer id, Principal principal) {
         return activityService.deleteVolunteerFromActivity(id, principal);
     }
 }

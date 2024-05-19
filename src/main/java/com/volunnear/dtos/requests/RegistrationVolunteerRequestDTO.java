@@ -9,5 +9,6 @@ public class RegistrationVolunteerRequestDTO {
     private String username;
     private String password;
     private String email;
-    private String realName;
+    private String firstName;
+    private String lastName;
 }

@@ -12,7 +12,8 @@ import java.util.List;
 public class VolunteerProfileResponseDTO {
     private String email;
     private String username;
-    private String realName;
+    private String firstName;
+    private String lastName;
     private List<String> preferences;
     private List<ActivitiesDTO> activitiesDTO;
 }

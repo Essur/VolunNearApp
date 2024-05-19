@@ -32,12 +32,12 @@ public class NotificationsController {
     }
 
     @PostMapping(Routes.SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANISATION)
-    public ResponseEntity<String> subscribeToNotificationsByIdOfOrganisation(@RequestParam Long idOfOrganisation, Principal principal) {
+    public ResponseEntity<String> subscribeToNotificationsByIdOfOrganisation(@RequestParam Integer idOfOrganisation, Principal principal) {
         return emailNotificationService.subscribeToNotificationByIdOfOrganisation(idOfOrganisation, principal);
     }
 
     @DeleteMapping(Routes.UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANISATION)
-    public ResponseEntity<String> unsubscribeFromNotificationsByIdOfOrganisations(@RequestParam Long idOfOrganisation, Principal principal) {
+    public ResponseEntity<String> unsubscribeFromNotificationsByIdOfOrganisations(@RequestParam Integer idOfOrganisation, Principal principal) {
         return emailNotificationService.unsubscribeFromNotificationOfOrganisation(idOfOrganisation, principal);
     }
 }

@@ -2,9 +2,9 @@ package com.volunnear.services.notifications;
 
 import com.volunnear.dtos.ActivityNotificationDTO;
 import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.entitiy.VolunteerNotificationSubscription;
+import com.volunnear.entitiy.infos.VolunteersSubscription;
 import com.volunnear.events.ActivityCreationEvent;
-import com.volunnear.repositories.VolunteerNotificationSubscriptionRepository;
+import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
@@ -21,16 +21,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventMailSenderService {
     private final JavaMailSender javaMailSender;
-    private final VolunteerNotificationSubscriptionRepository subscriptionRepository;
+    private final VolunteersSubscriptionRepository subscriptionRepository;
 
     @Async
     @EventListener(ActivityCreationEvent.class)
     public void sendNotificationForSubscribers(ActivityCreationEvent activityCreationEvent) {
         ActivityNotificationDTO notificationDTO = activityCreationEvent.getNotificationDTO();
-        List<VolunteerNotificationSubscription> subscriptions = subscriptionRepository.findAllByUserOrganisationId(notificationDTO.getOrganisationResponseDTO().getId());
+        List<VolunteersSubscription> subscriptions = subscriptionRepository.findAllByOrganisation_Id(notificationDTO.getOrganisationResponseDTO().getId());
         Map<String, String> usernameAndEmailMap = subscriptions.stream().collect(Collectors.toMap(
-                volunteerNotificationSubscription -> volunteerNotificationSubscription.getUserVolunteer().getUsername(),
-                volunteerNotificationSubscription -> volunteerNotificationSubscription.getUserVolunteer().getEmail(),
+                volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getUsername(),
+                volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getEmail(),
                 (existingEmail, newEmail) -> existingEmail
         ));
         ActivityDTO activityDTO = notificationDTO.getActivityDTO();

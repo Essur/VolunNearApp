@@ -3,13 +3,11 @@ package com.volunnear.services;
 import com.volunnear.dtos.requests.FeedbackRequest;
 import com.volunnear.dtos.response.FeedbackResponseDTO;
 import com.volunnear.dtos.response.OrganisationResponseDTO;
-import com.volunnear.entitiy.infos.FeedbackAboutOrganisation;
-import com.volunnear.entitiy.infos.OrganisationInfo;
-import com.volunnear.entitiy.infos.VolunteerInfo;
-import com.volunnear.entitiy.users.AppUser;
-import com.volunnear.repositories.infos.FeedbackAboutOrganisationRepository;
+import com.volunnear.entitiy.infos.Feedback;
+import com.volunnear.entitiy.infos.Organisation;
+import com.volunnear.entitiy.infos.Volunteer;
+import com.volunnear.repositories.infos.FeedbackRepository;
 import com.volunnear.services.users.OrganisationService;
-import com.volunnear.services.users.UserService;
 import com.volunnear.services.users.VolunteerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,50 +24,46 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FeedbackService {
-    private final UserService userService;
     private final VolunteerService volunteerService;
     private final OrganisationService organisationService;
-    private final FeedbackAboutOrganisationRepository feedbackAboutOrganisationRepository;
+    private final FeedbackRepository feedbackAboutOrganisationRepository;
 
     public ResponseEntity<String> postFeedbackAboutOrganisation(FeedbackRequest feedbackRequest, Principal principal) {
         if (feedbackRequest.getRate() < 0 || feedbackRequest.getRate() > 10) {
             return new ResponseEntity<>("Bad value of rate", HttpStatus.BAD_REQUEST);
         }
 
-        AppUser appUserByUsername = userService.findAppUserByUsername(principal.getName()).get();
+        Volunteer volunteer = volunteerService.getVolunteerInfo(principal).get();
+        Optional<Organisation> organisationById = organisationService.findOrganisationById(feedbackRequest.getIdOfOrganisation());
 
-        VolunteerInfo volunteerInfo = volunteerService.getVolunteerInfo(appUserByUsername);
-        Optional<OrganisationInfo> organisationAndAdditionalInfoById = organisationService.findOrganisationAndAdditionalInfoById(feedbackRequest.getIdOfOrganisation());
-
-        if (organisationAndAdditionalInfoById.isEmpty()) {
+        if (organisationById.isEmpty()) {
             return new ResponseEntity<>("No additional data about selected organisation", HttpStatus.BAD_REQUEST);
         }
 
-        FeedbackAboutOrganisation feedback = new FeedbackAboutOrganisation();
-        feedback.setOrganisationInfo(organisationAndAdditionalInfoById.get());
-        feedback.setUsernameOfVolunteer(principal.getName());
-        feedback.setNameOfVolunteer(volunteerInfo.getRealNameOfUser());
-        feedback.setDescription(feedbackRequest.getFeedbackDescription());
+        Feedback feedback = new Feedback();
+        feedback.setTargetOrganisation(organisationById.get());
+        feedback.setVolunteerFeedbackAuthor(volunteer);
         feedback.setRate(feedbackRequest.getRate());
+        feedback.setDescription(feedbackRequest.getFeedbackDescription());
         feedbackAboutOrganisationRepository.save(feedback);
         return new ResponseEntity<>("Feedback successfully added", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> updateFeedbackInfoForCurrentOrganisation(Long idOfFeedback, FeedbackRequest feedbackRequest, Principal principal) {
-        Optional<FeedbackAboutOrganisation> feedbackById = feedbackAboutOrganisationRepository.findById(idOfFeedback);
-        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getUsernameOfVolunteer())) {
+    public ResponseEntity<String> updateFeedbackInfoForCurrentOrganisation(Integer idOfFeedback, FeedbackRequest feedbackRequest, Principal principal) {
+        Optional<Feedback> feedbackById = feedbackAboutOrganisationRepository.findById(idOfFeedback);
+        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
             return new ResponseEntity<>("Invalid id of feedback", HttpStatus.BAD_REQUEST);
         }
-        FeedbackAboutOrganisation feedbackAboutOrganisation = feedbackById.get();
+        Feedback feedbackAboutOrganisation = feedbackById.get();
         feedbackAboutOrganisation.setDescription(feedbackRequest.getFeedbackDescription());
         feedbackAboutOrganisation.setRate(feedbackRequest.getRate());
         feedbackAboutOrganisationRepository.save(feedbackAboutOrganisation);
         return new ResponseEntity<>("Successfully updated feedback", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> deleteFeedbackAboutOrganisation(Long idOfFeedback, Principal principal) {
-        Optional<FeedbackAboutOrganisation> feedbackById = feedbackAboutOrganisationRepository.findById(idOfFeedback);
-        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getUsernameOfVolunteer())) {
+    public ResponseEntity<String> deleteFeedbackAboutOrganisation(Integer idOfFeedback, Principal principal) {
+        Optional<Feedback> feedbackById = feedbackAboutOrganisationRepository.findById(idOfFeedback);
+        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
             return new ResponseEntity<>("Invalid id of feedback", HttpStatus.BAD_REQUEST);
         }
         feedbackAboutOrganisationRepository.deleteById(idOfFeedback);
@@ -77,13 +71,13 @@ public class FeedbackService {
     }
 
     public Map<OrganisationResponseDTO, List<FeedbackResponseDTO>> getAllFeedbacksAboutAllOrganisations() {
-        List<FeedbackAboutOrganisation> allFeedback = feedbackAboutOrganisationRepository.findAll();
+        List<Feedback> allFeedback = feedbackAboutOrganisationRepository.findAll();
         return getOrganisationResponseDTOMap(allFeedback);
     }
 
-    public ResponseEntity<?> getFeedbacksAboutCurrentOrganisation(Long id) {
-        List<FeedbackAboutOrganisation> feedbackAboutOrganisationList =
-                feedbackAboutOrganisationRepository.findFeedbackAboutOrganisationByOrganisationInfo_AppUser_Id(id);
+    public ResponseEntity<?> getFeedbacksAboutCurrentOrganisation(Integer id) {
+        List<Feedback> feedbackAboutOrganisationList =
+                feedbackAboutOrganisationRepository.findAllByTargetOrganisation_Id(id);
         if (feedbackAboutOrganisationList.isEmpty()) {
             return new ResponseEntity<>("There is no feedback about that organisation", HttpStatus.OK);
         }
@@ -91,25 +85,27 @@ public class FeedbackService {
         return new ResponseEntity<>(feedbackResult, HttpStatus.OK);
     }
 
-    private Map<OrganisationResponseDTO, List<FeedbackResponseDTO>> getOrganisationResponseDTOMap(List<FeedbackAboutOrganisation> allFeedback) {
-        Map<OrganisationInfo, List<FeedbackAboutOrganisation>> feedbackMap =
-                allFeedback.stream().collect(Collectors.groupingBy(FeedbackAboutOrganisation::getOrganisationInfo));
+    private Map<OrganisationResponseDTO, List<FeedbackResponseDTO>> getOrganisationResponseDTOMap(List<Feedback> allFeedback) {
+        Map<Organisation, List<Feedback>> feedbackMap =
+                allFeedback.stream().collect(Collectors.groupingBy(Feedback::getTargetOrganisation));
 
         Map<OrganisationResponseDTO, List<FeedbackResponseDTO>> feedbackResult = new HashMap<>();
-        for (Map.Entry<OrganisationInfo, List<FeedbackAboutOrganisation>> organisationInfoListEntry : feedbackMap.entrySet()) {
+        for (Map.Entry<Organisation, List<Feedback>> organisationInfoListEntry : feedbackMap.entrySet()) {
             feedbackResult.put(organisationService.getOrganisationResponseDTO(organisationInfoListEntry.getKey()),
                     getListOfFeedbacksDTO(organisationInfoListEntry.getValue()));
         }
         return feedbackResult;
     }
 
-    private List<FeedbackResponseDTO> getListOfFeedbacksDTO(List<FeedbackAboutOrganisation> feedbackAboutOrganisationList) {
+    private List<FeedbackResponseDTO> getListOfFeedbacksDTO(List<Feedback> feedbackAboutOrganisationList) {
         return feedbackAboutOrganisationList.stream().map(feedbackAboutOrganisation -> new FeedbackResponseDTO(
                 feedbackAboutOrganisation.getId(),
                 feedbackAboutOrganisation.getRate(),
                 feedbackAboutOrganisation.getDescription(),
-                feedbackAboutOrganisation.getNameOfVolunteer(),
-                feedbackAboutOrganisation.getUsernameOfVolunteer()
+                feedbackAboutOrganisation.getVolunteerFeedbackAuthor().getFirstName()
+                        + " " + feedbackAboutOrganisation.getVolunteerFeedbackAuthor().getLastName(),
+                feedbackAboutOrganisation.getVolunteerFeedbackAuthor().getUsername()
+
         )).toList();
     }
 

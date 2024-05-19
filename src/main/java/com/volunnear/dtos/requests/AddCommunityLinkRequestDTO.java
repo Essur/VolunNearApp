@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateVolunteerInfoRequestDTO {
-    private String email;
-    private String firstName;
-    private String lastName;
+public class AddCommunityLinkRequestDTO {
+    private String link;
+    private String socialNetwork;
 }

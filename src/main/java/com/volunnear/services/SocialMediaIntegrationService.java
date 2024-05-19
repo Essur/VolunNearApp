@@ -1,10 +1,12 @@
 package com.volunnear.services;
 
-import com.volunnear.entitiy.activities.Activity;
+import com.volunnear.dtos.requests.AddActivityLinkRequestDTO;
+import com.volunnear.dtos.requests.AddCommunityLinkRequestDTO;
+import com.volunnear.dtos.response.ActivityChatLinkResponseDTO;
+import com.volunnear.entitiy.activities.Activities;
 import com.volunnear.entitiy.infos.ActivityChatLink;
+import com.volunnear.entitiy.infos.Organisation;
 import com.volunnear.entitiy.infos.OrganisationGroupLink;
-import com.volunnear.entitiy.infos.OrganisationInfo;
-import com.volunnear.entitiy.users.AppUser;
 import com.volunnear.repositories.infos.ActivityChatLinkRepository;
 import com.volunnear.repositories.infos.OrganisationGroupLinkRepository;
 import com.volunnear.services.activities.ActivityService;
@@ -25,48 +27,54 @@ public class SocialMediaIntegrationService {
     private final ActivityChatLinkRepository activityChatLinkRepository;
     private final OrganisationGroupLinkRepository organisationGroupLinkRepository;
 
-    public ResponseEntity<?> addChatLinkToActivity(Long idOfActivity, String link, Principal principal) {
-        Optional<AppUser> organisationByUsername = organisationService.findOrganisationByUsername(principal.getName());
-        Optional<Activity> activity = activityService.findActivityByOrganisationAndIdOfActivity(organisationByUsername.get(), idOfActivity);
-        if (activity.isEmpty()) {
+    public ResponseEntity<?> addChatLinkToActivity(AddActivityLinkRequestDTO linkRequestDTO, Principal principal) {
+        Optional<Activities> activity = activityService.findActivityByOrganisationAndIdOfActivity(principal, linkRequestDTO.getActivityId());
+        if (activity.isEmpty() || !principal.getName().equals(activity.get().getOrganisation().getUsername())) {
             return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
-        } else if (activityChatLinkRepository.existsByActivity_Id(idOfActivity)) {
+        } else if (activityChatLinkRepository.existsByActivity_Id(linkRequestDTO.getActivityId())) {
             return new ResponseEntity<>("Link already exists", HttpStatus.BAD_REQUEST);
         }
         ActivityChatLink activityChatLink = new ActivityChatLink();
-        activityChatLink.setActivity(activity.get());
-        activityChatLink.setLink(link);
+        activityChatLink.setLink(linkRequestDTO.getLink());
+        activityChatLink.setSocialNetwork(linkRequestDTO.getSocialNetwork());
+
+        activityChatLink.setActivity(activity.get().getActivity());
+        activityChatLink.setOrganisation(activity.get().getOrganisation());
         activityChatLinkRepository.save(activityChatLink);
-        return new ResponseEntity<>("Successfully added link to activity with title " + activity.get().getTitle(), HttpStatus.OK);
+        return new ResponseEntity<>("Successfully added link to activity with title " + activity.get().getActivity().getTitle(), HttpStatus.OK);
     }
 
-    public ResponseEntity<String> getChatLinkByActivityId(Long idOfActivity) {
-        Optional<ActivityChatLink> linkByActivityId = activityChatLinkRepository.findByActivity_Id(idOfActivity);
+    public ResponseEntity<String> getChatLinkByActivityId(Integer idOfActivity) {
+        Optional<ActivityChatLink> linkByActivityId = activityChatLinkRepository.findActivityChatLinkByActivity_Id(idOfActivity);
         if (linkByActivityId.isEmpty()) {
             return new ResponseEntity<>("Activity with id " + idOfActivity + " not founded", HttpStatus.BAD_REQUEST);
         }
-        ActivityChatLink activityChatLink = linkByActivityId.get();
+        ActivityChatLinkResponseDTO activityChatLink = new ActivityChatLinkResponseDTO();
+        activityChatLink.setLink(linkByActivityId.get().getLink());
+        activityChatLink.setActivityName(linkByActivityId.get().getActivity().getTitle());
+        activityChatLink.setActivityId(linkByActivityId.get().getActivity().getId());
+        activityChatLink.setSocialNetwork(linkByActivityId.get().getSocialNetwork());
         return new ResponseEntity<>("There`s link for chat of activity " + activityChatLink.getLink(), HttpStatus.OK);
     }
 
-    public ResponseEntity<?> addCommunityLink(String link, Principal principal) {
-        if (organisationGroupLinkRepository.existsByOrganisationInfo_AppUser_Username(principal.getName())) {
+    public ResponseEntity<?> addCommunityLink(AddCommunityLinkRequestDTO communityLinkRequestDTO, Principal principal) {
+        if (organisationGroupLinkRepository.existsByOrganisation_Username(principal.getName())) {
             return new ResponseEntity<>("Link already exists", HttpStatus.BAD_REQUEST);
-        } else if (!organisationService.isUserAreOrganisation(organisationService.findOrganisationByUsername(principal.getName()).get())) {
+        } else if (!organisationService.isUserAreOrganisation(principal.getName())) {
             return new ResponseEntity<>("Bad id of organisation!", HttpStatus.BAD_REQUEST);
         }
-        OrganisationInfo infoAboutOrganisation = organisationService.findAdditionalInfoAboutOrganisation(
-                organisationService.findOrganisationByUsername(principal.getName()).get());
+        Organisation organisation = organisationService.findOrganisationByUsername(principal.getName()).get();
         OrganisationGroupLink organisationGroupLink = new OrganisationGroupLink();
 
-        organisationGroupLink.setOrganisationInfo(infoAboutOrganisation);
-        organisationGroupLink.setLink(link);
+        organisationGroupLink.setOrganisation(organisation);
+        organisationGroupLink.setLink(communityLinkRequestDTO.getLink());
+        organisationGroupLink.setSocialNetwork(communityLinkRequestDTO.getSocialNetwork());
         organisationGroupLinkRepository.save(organisationGroupLink);
-        return new ResponseEntity<>("Successfully added community link to organisation " + infoAboutOrganisation.getNameOfOrganisation(), HttpStatus.OK);
+        return new ResponseEntity<>("Successfully added community link to organisation " + organisation.getName(), HttpStatus.OK);
     }
 
-    public ResponseEntity<String> getCommunityLinkByOrganisationId(Long idOfOrganisation) {
-        Optional<OrganisationGroupLink> organisationGroupLink = organisationGroupLinkRepository.findByOrganisationInfo_AppUser_Id(idOfOrganisation);
+    public ResponseEntity<String> getCommunityLinkByOrganisationId(Integer idOfOrganisation) {
+        Optional<OrganisationGroupLink> organisationGroupLink = organisationGroupLinkRepository.findOrganisationGroupLinkByOrganisation_Id(idOfOrganisation);
         if (organisationGroupLink.isEmpty()) {
             return new ResponseEntity<>("Bad id of organisation!", HttpStatus.BAD_REQUEST);
         }

@@ -1,6 +1,8 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.requests.AddActivityLinkRequestDTO;
+import com.volunnear.dtos.requests.AddCommunityLinkRequestDTO;
 import com.volunnear.services.SocialMediaIntegrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,17 +20,16 @@ public class SocialMediaIntegrationController {
 
     @Operation(summary = "Add chat link to activity", description = "Requires organisation account (token), link and idOfActivity")
     @PostMapping(Routes.ADD_CHAT_LINK_FOR_ACTIVITY)
-    public ResponseEntity<?> addChatLinkToActivity(@RequestParam Long idOfActivity,
-                                                   @RequestBody String link,
+    public ResponseEntity<?> addChatLinkToActivity(@RequestBody AddActivityLinkRequestDTO addActivityLinkRequestDTO,
                                                    Principal principal) {
-        return socialMediaIntegrationService.addChatLinkToActivity(idOfActivity, link, principal);
+        return socialMediaIntegrationService.addChatLinkToActivity(addActivityLinkRequestDTO, principal);
     }
 
     @Operation(summary = "Add community link", description = "Requires organisation account (token) and link")
     @PostMapping(Routes.ADD_COMMUNITY_LINK)
-    public ResponseEntity<?> addCommunityLink(@RequestBody String link,
+    public ResponseEntity<?> addCommunityLink(@RequestBody AddCommunityLinkRequestDTO linkRequestDTO,
                                               Principal principal) {
-        return socialMediaIntegrationService.addCommunityLink(link, principal);
+        return socialMediaIntegrationService.addCommunityLink(linkRequestDTO, principal);
     }
 
     @Operation(summary = "Get chat link by id of activity", description = "Method requires idOfActivity")
@@ -37,7 +38,7 @@ public class SocialMediaIntegrationController {
             @ApiResponse(responseCode = "400", description = "Bad id of activity!")
     })
     @GetMapping(Routes.GET_CHAT_LINK_BY_ACTIVITY)
-    public ResponseEntity<String> getChatLinkByActivity(@RequestParam Long idOfActivity) {
+    public ResponseEntity<String> getChatLinkByActivity(@RequestParam Integer idOfActivity) {
         return socialMediaIntegrationService.getChatLinkByActivityId(idOfActivity);
     }
 
@@ -47,7 +48,7 @@ public class SocialMediaIntegrationController {
             @ApiResponse(responseCode = "400", description = "Bad id of organisation!")
     })
     @GetMapping(Routes.GET_COMMUNITY_LINK_BY_ORGANISATION)
-    public ResponseEntity<String> getCommunityLinkByOrganisation(@RequestParam Long idOfOrganisation) {
+    public ResponseEntity<String> getCommunityLinkByOrganisation(@RequestParam Integer idOfOrganisation) {
         return socialMediaIntegrationService.getCommunityLinkByOrganisationId(idOfOrganisation);
     }
 }

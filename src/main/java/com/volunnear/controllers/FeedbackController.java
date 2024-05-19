@@ -33,7 +33,7 @@ public class FeedbackController {
             @ApiResponse(responseCode = "400", description = "There is no feedback about that organisation"),
     })
     @GetMapping(Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANISATION)
-    public ResponseEntity<?> getFeedbacksAboutCurrentOrganisation(@RequestParam Long id) {
+    public ResponseEntity<?> getFeedbacksAboutCurrentOrganisation(@RequestParam Integer id) {
         return feedbackService.getFeedbacksAboutCurrentOrganisation(id);
     }
 
@@ -43,13 +43,13 @@ public class FeedbackController {
     }
 
     @PutMapping(Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANISATION)
-    public ResponseEntity<String> updateFeedbackInfoForCurrentOrganisation(@RequestParam Long idOfFeedback,
+    public ResponseEntity<String> updateFeedbackInfoForCurrentOrganisation(@RequestParam Integer idOfFeedback,
                                                                            @RequestBody FeedbackRequest feedbackRequest, Principal principal) {
         return feedbackService.updateFeedbackInfoForCurrentOrganisation(idOfFeedback, feedbackRequest, principal);
     }
 
     @DeleteMapping(Routes.DELETE_FEEDBACK_ABOUT_ORGANISATION)
-    public ResponseEntity<String> deleteFeedbackAboutOrganisation(@RequestParam Long idOfFeedback, Principal principal) {
+    public ResponseEntity<String> deleteFeedbackAboutOrganisation(@RequestParam Integer idOfFeedback, Principal principal) {
         return feedbackService.deleteFeedbackAboutOrganisation(idOfFeedback, principal);
     }
 }

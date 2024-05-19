@@ -7,6 +7,8 @@ import com.volunnear.dtos.requests.RegistrationVolunteerRequestDTO;
 import com.volunnear.dtos.requests.UpdateOrganisationInfoRequestDTO;
 import com.volunnear.dtos.requests.UpdateVolunteerInfoRequestDTO;
 import com.volunnear.services.security.AuthService;
+import com.volunnear.services.users.OrganisationService;
+import com.volunnear.services.users.VolunteerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final VolunteerService volunteerService;
+    private final OrganisationService organisationService;
 
     @PostMapping(value = Routes.LOGIN)
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
@@ -29,21 +33,21 @@ public class AuthController {
 
     @PostMapping(value = Routes.REGISTER_VOLUNTEER, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registrationOfVolunteer(@RequestBody RegistrationVolunteerRequestDTO registrationVolunteerRequestDto) {
-        return authService.registrationOfVolunteer(registrationVolunteerRequestDto);
+        return volunteerService.registerVolunteer(registrationVolunteerRequestDto);
     }
 
     @PostMapping(value = Routes.REGISTER_ORGANISATION, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registrationOfOrganisation(@RequestBody RegistrationOrganisationRequestDTO registrationOrganisationRequestDTO) {
-        return authService.registrationOfOrganisation(registrationOrganisationRequestDTO);
+        return organisationService.registerOrganisation(registrationOrganisationRequestDTO);
     }
 
     @PutMapping(value = Routes.UPDATE_VOLUNTEER_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateVolunteerInfo(@RequestBody UpdateVolunteerInfoRequestDTO updateVolunteerInfoRequestDTO, Principal principal) {
-        return authService.updateVolunteerInfo(updateVolunteerInfoRequestDTO, principal);
+        return volunteerService.updateVolunteerInfo(updateVolunteerInfoRequestDTO, principal);
     }
 
     @PutMapping(value = Routes.UPDATE_ORGANISATION_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateOrganisationInfo(@RequestBody UpdateOrganisationInfoRequestDTO updateOrganisationInfoRequest, Principal principal) {
-        return authService.updateOrganisationInfo(updateOrganisationInfoRequest, principal);
+        return organisationService.updateOrganisationInfo(updateOrganisationInfoRequest, principal);
     }
 }

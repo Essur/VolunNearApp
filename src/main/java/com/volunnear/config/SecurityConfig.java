@@ -57,13 +57,12 @@ public class SecurityConfig {
                                 Routes.GET_CHAT_LINK_BY_ACTIVITY,
                                 Routes.GET_COMMUNITY_LINK_BY_ORGANISATION)
                         .hasAnyRole("VOLUNTEER", "ORGANISATION")
-
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());
         http.sessionManagement(sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

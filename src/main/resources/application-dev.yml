@@ -15,10 +15,10 @@ spring:
       auth: true
       starttls-enable: true
     protocol: smtp
-  sql:
-    init:
-      data-locations: classpath:roles.sql
-      mode: always
+#  sql:
+#    init:
+#      data-locations: classpath:roles.sql
+#      mode: always
 server:
   forward-headers-strategy: framework
   error:

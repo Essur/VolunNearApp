@@ -1,98 +1,108 @@
 package com.volunnear.services.users;
 
-import com.volunnear.dtos.OrganisationDTO;
+import com.volunnear.dtos.requests.RegistrationOrganisationRequestDTO;
+import com.volunnear.dtos.requests.UpdateOrganisationInfoRequestDTO;
 import com.volunnear.dtos.response.OrganisationResponseDTO;
-import com.volunnear.entitiy.infos.OrganisationInfo;
+import com.volunnear.entitiy.infos.Organisation;
 import com.volunnear.entitiy.users.AppUser;
-import com.volunnear.repositories.infos.OrganisationInfoRepository;
-import com.volunnear.repositories.users.UserRepository;
+import com.volunnear.repositories.infos.OrganisationRepository;
+import com.volunnear.repositories.users.AppUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class OrganisationService {
-    private final RoleService roleService;
-    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final OrganisationInfoRepository organisationInfoRepository;
+    private final AppUserRepository appUserRepository;
+    private final OrganisationRepository organisationRepository;
 
     public List<OrganisationResponseDTO> getAllOrganisationsWithInfo() {
-        List<OrganisationInfo> organisationInfos = organisationInfoRepository.findAll();
+        List<Organisation> organisationInfos = organisationRepository.findAll();
         List<OrganisationResponseDTO> organisationResponseDTO = new ArrayList<>();
-        for (OrganisationInfo organisationInfo : organisationInfos) {
+        for (Organisation organisationInfo : organisationInfos) {
             organisationResponseDTO.add(getOrganisationResponseDTO(organisationInfo));
         }
         return organisationResponseDTO;
     }
 
-    public void registerOrganisation(OrganisationDTO organisationDTO) {
+    public ResponseEntity<?> registerOrganisation(RegistrationOrganisationRequestDTO registrationOrganisationRequestDTO) {
+        if (appUserRepository.existsByUsername(registrationOrganisationRequestDTO.getUsername())) {
+            return new ResponseEntity<>("User with username " + registrationOrganisationRequestDTO.getUsername() + " already exists", HttpStatus.OK);
+        }
         AppUser organisation = new AppUser();
-        organisation.setUsername(organisationDTO.getCredentials().getUsername());
-        organisation.setPassword(passwordEncoder.encode(organisationDTO.getCredentials().getPassword()));
-        organisation.setRoles(roleService.getRoleByName("ROLE_ORGANISATION"));
-        organisation.setEmail(organisationDTO.getCredentials().getEmail());
-        addAdditionalDataAboutOrganisation(organisation, organisationDTO);
-        userRepository.save(organisation);
+        organisation.setUsername(registrationOrganisationRequestDTO.getUsername());
+        organisation.setPassword(passwordEncoder.encode(registrationOrganisationRequestDTO.getPassword()));
+        organisation.setRoles(Set.of("ROLE_ORGANISATION"));
+        appUserRepository.save(organisation);
+        addAdditionalDataAboutOrganisation(registrationOrganisationRequestDTO);
+        return new ResponseEntity<>("Registration successful", HttpStatus.OK);
     }
 
-    private void addAdditionalDataAboutOrganisation(AppUser organisation, OrganisationDTO organisationDTO) {
-        OrganisationInfo organisationInfo = new OrganisationInfo();
-        organisationInfo.setAppUser(organisation);
-        organisationInfo.setNameOfOrganisation(organisationDTO.getNameOfOrganisation());
-        organisationInfo.setCountry(organisationDTO.getCountry());
-        organisationInfo.setCity(organisationDTO.getCity());
-        organisationInfo.setAddress(organisationDTO.getAddress());
-        organisationInfoRepository.save(organisationInfo);
+    private void addAdditionalDataAboutOrganisation(RegistrationOrganisationRequestDTO registrationOrganisationRequestDTO) {
+        Organisation organisation = Organisation.builder()
+                .name(registrationOrganisationRequestDTO.getNameOfOrganisation())
+                .username(registrationOrganisationRequestDTO.getUsername())
+                .email(registrationOrganisationRequestDTO.getEmail())
+                .country(registrationOrganisationRequestDTO.getCountry())
+                .city(registrationOrganisationRequestDTO.getCity())
+                .address(registrationOrganisationRequestDTO.getAddress())
+                .build();
+        organisationRepository.save(organisation);
     }
 
-    public void updateOrganisationInfo(AppUser appUser, OrganisationInfo organisationInfo) {
-        userRepository.save(appUser);
-        organisationInfo.setAppUser(appUser);
-        organisationInfoRepository.save(organisationInfo);
+    public ResponseEntity<?> updateOrganisationInfo(UpdateOrganisationInfoRequestDTO updateOrganisationInfoRequestDTO, Principal principal) {
+        Optional<Organisation> organisationByUsername = organisationRepository.findOrganisationByUsername(principal.getName());
+        if (organisationByUsername.isEmpty()) {
+            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+        }
+        Organisation organisation = organisationByUsername.get();
+        organisation.setEmail(updateOrganisationInfoRequestDTO.getEmail());
+        organisation.setName(updateOrganisationInfoRequestDTO.getNameOfOrganisation());
+        organisation.setCountry(updateOrganisationInfoRequestDTO.getCountry());
+        organisation.setCity(updateOrganisationInfoRequestDTO.getCity());
+        organisation.setAddress(updateOrganisationInfoRequestDTO.getAddress());
+        organisationRepository.save(organisation);
+        return new ResponseEntity<>("Data was successfully updated", HttpStatus.OK);
     }
 
-    public Optional<AppUser> findOrganisationByUsername(String username) {
-        return userRepository.findAppUserByUsername(username);
+    public Optional<Organisation> findOrganisationByUsername(String username) {
+        return organisationRepository.findOrganisationByUsername(username);
     }
 
-    public Optional<AppUser> findOrganisationById(Long id) {
-        return userRepository.findById(id);
+    public Optional<Organisation> findOrganisationById(Integer id) {
+        return organisationRepository.findById(id);
     }
 
-    public Optional<OrganisationInfo> findOrganisationByNameOfOrganisation(String nameOfOrganisation) {
-        return organisationInfoRepository.findOrganisationInfoByNameOfOrganisation(nameOfOrganisation);
+    public Optional<Organisation> findOrganisationByNameOfOrganisation(String nameOfOrganisation) {
+        return organisationRepository.findOrganisationByNameIgnoreCase(nameOfOrganisation);
     }
 
-    public OrganisationInfo findAdditionalInfoAboutOrganisation(AppUser user) {
-        return organisationInfoRepository.findOrganisationInfoByAppUser(user);
+    public boolean isUserAreOrganisation(String username) {
+        return organisationRepository.existsByUsername(username);
     }
 
-    public Optional<OrganisationInfo> findOrganisationAndAdditionalInfoById(Long idOfOrganisation) {
-        Optional<AppUser> byId = userRepository.findById(idOfOrganisation);
-        return byId.map(organisationInfoRepository::findOrganisationInfoByAppUser);
+    public OrganisationResponseDTO getResponseDTOForSubscriptions(Organisation organisation) {
+        return getOrganisationResponseDTO(organisation);
     }
 
-    public boolean isUserAreOrganisation(AppUser appUser) {
-        return organisationInfoRepository.existsByAppUser(appUser);
-    }
-
-    public OrganisationResponseDTO getResponseDTOForSubscriptions(AppUser appUser) {
-        return getOrganisationResponseDTO(findAdditionalInfoAboutOrganisation(appUser));
-    }
-
-    public OrganisationResponseDTO getOrganisationResponseDTO(OrganisationInfo additionalInfoAboutOrganisation) {
+    public OrganisationResponseDTO getOrganisationResponseDTO(Organisation organisation) {
         return new OrganisationResponseDTO(
-                additionalInfoAboutOrganisation.getAppUser().getId(),
-                additionalInfoAboutOrganisation.getNameOfOrganisation(),
-                additionalInfoAboutOrganisation.getCountry(),
-                additionalInfoAboutOrganisation.getCity(),
-                additionalInfoAboutOrganisation.getAddress());
+                organisation.getId(),
+                organisation.getName(),
+                organisation.getCountry(),
+                organisation.getCity(),
+                organisation.getAddress(),
+                organisation.getEmail());
     }
 
 }
