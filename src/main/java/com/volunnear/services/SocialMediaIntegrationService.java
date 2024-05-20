@@ -5,12 +5,12 @@ import com.volunnear.dtos.requests.AddCommunityLinkRequestDTO;
 import com.volunnear.dtos.response.ActivityChatLinkResponseDTO;
 import com.volunnear.entitiy.activities.Activities;
 import com.volunnear.entitiy.infos.ActivityChatLink;
-import com.volunnear.entitiy.infos.Organisation;
-import com.volunnear.entitiy.infos.OrganisationGroupLink;
+import com.volunnear.entitiy.infos.Organization;
+import com.volunnear.entitiy.infos.OrganizationGroupLink;
 import com.volunnear.repositories.infos.ActivityChatLinkRepository;
-import com.volunnear.repositories.infos.OrganisationGroupLinkRepository;
+import com.volunnear.repositories.infos.OrganizationGroupLinkRepository;
 import com.volunnear.services.activities.ActivityService;
-import com.volunnear.services.users.OrganisationService;
+import com.volunnear.services.users.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +23,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SocialMediaIntegrationService {
     private final ActivityService activityService;
-    private final OrganisationService organisationService;
+    private final OrganizationService organizationService;
     private final ActivityChatLinkRepository activityChatLinkRepository;
-    private final OrganisationGroupLinkRepository organisationGroupLinkRepository;
+    private final OrganizationGroupLinkRepository organizationGroupLinkRepository;
 
     public ResponseEntity<?> addChatLinkToActivity(AddActivityLinkRequestDTO linkRequestDTO, Principal principal) {
-        Optional<Activities> activity = activityService.findActivityByOrganisationAndIdOfActivity(principal, linkRequestDTO.getActivityId());
-        if (activity.isEmpty() || !principal.getName().equals(activity.get().getOrganisation().getUsername())) {
+        Optional<Activities> activity = activityService.findActivityByOrganizationAndIdOfActivity(principal, linkRequestDTO.getActivityId());
+        if (activity.isEmpty() || !principal.getName().equals(activity.get().getOrganization().getUsername())) {
             return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
         } else if (activityChatLinkRepository.existsByActivity_Id(linkRequestDTO.getActivityId())) {
             return new ResponseEntity<>("Link already exists", HttpStatus.BAD_REQUEST);
@@ -39,7 +39,7 @@ public class SocialMediaIntegrationService {
         activityChatLink.setSocialNetwork(linkRequestDTO.getSocialNetwork());
 
         activityChatLink.setActivity(activity.get().getActivity());
-        activityChatLink.setOrganisation(activity.get().getOrganisation());
+        activityChatLink.setOrganization(activity.get().getOrganization());
         activityChatLinkRepository.save(activityChatLink);
         return new ResponseEntity<>("Successfully added link to activity with title " + activity.get().getActivity().getTitle(), HttpStatus.OK);
     }
@@ -58,28 +58,28 @@ public class SocialMediaIntegrationService {
     }
 
     public ResponseEntity<?> addCommunityLink(AddCommunityLinkRequestDTO communityLinkRequestDTO, Principal principal) {
-        if (organisationGroupLinkRepository.existsByOrganisation_Username(principal.getName())) {
+        if (organizationGroupLinkRepository.existsByOrganization_Username(principal.getName())) {
             return new ResponseEntity<>("Link already exists", HttpStatus.BAD_REQUEST);
-        } else if (!organisationService.isUserAreOrganisation(principal.getName())) {
-            return new ResponseEntity<>("Bad id of organisation!", HttpStatus.BAD_REQUEST);
+        } else if (!organizationService.isUserAreOrganization(principal.getName())) {
+            return new ResponseEntity<>("Bad id of organization!", HttpStatus.BAD_REQUEST);
         }
-        Organisation organisation = organisationService.findOrganisationByUsername(principal.getName()).get();
-        OrganisationGroupLink organisationGroupLink = new OrganisationGroupLink();
+        Organization organization = organizationService.findOrganizationByUsername(principal.getName()).get();
+        OrganizationGroupLink organizationGroupLink = new OrganizationGroupLink();
 
-        organisationGroupLink.setOrganisation(organisation);
-        organisationGroupLink.setLink(communityLinkRequestDTO.getLink());
-        organisationGroupLink.setSocialNetwork(communityLinkRequestDTO.getSocialNetwork());
-        organisationGroupLinkRepository.save(organisationGroupLink);
-        return new ResponseEntity<>("Successfully added community link to organisation " + organisation.getName(), HttpStatus.OK);
+        organizationGroupLink.setOrganization(organization);
+        organizationGroupLink.setLink(communityLinkRequestDTO.getLink());
+        organizationGroupLink.setSocialNetwork(communityLinkRequestDTO.getSocialNetwork());
+        organizationGroupLinkRepository.save(organizationGroupLink);
+        return new ResponseEntity<>("Successfully added community link to organization " + organization.getName(), HttpStatus.OK);
     }
 
-    public ResponseEntity<String> getCommunityLinkByOrganisationId(Integer idOfOrganisation) {
-        Optional<OrganisationGroupLink> organisationGroupLink = organisationGroupLinkRepository.findOrganisationGroupLinkByOrganisation_Id(idOfOrganisation);
-        if (organisationGroupLink.isEmpty()) {
-            return new ResponseEntity<>("Bad id of organisation!", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> getCommunityLinkByOrganizationId(Integer idOfOrganization) {
+        Optional<OrganizationGroupLink> organizationGroupLink = organizationGroupLinkRepository.findOrganizationGroupLinkByOrganization_Id(idOfOrganization);
+        if (organizationGroupLink.isEmpty()) {
+            return new ResponseEntity<>("Bad id of organization!", HttpStatus.BAD_REQUEST);
         }
-        OrganisationGroupLink organisationGroupLinkResponse = organisationGroupLink.get();
-        return new ResponseEntity<>("There`s link for community of organisation " + organisationGroupLinkResponse.getLink() +
-                " social network: " + organisationGroupLinkResponse.getSocialNetwork(), HttpStatus.OK);
+        OrganizationGroupLink organizationGroupLinkResponse = organizationGroupLink.get();
+        return new ResponseEntity<>("There`s link for community of organization " + organizationGroupLinkResponse.getLink() +
+                " social network: " + organizationGroupLinkResponse.getSocialNetwork(), HttpStatus.OK);
     }
 }

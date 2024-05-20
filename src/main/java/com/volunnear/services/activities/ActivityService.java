@@ -5,9 +5,9 @@ import com.volunnear.dtos.requests.AddActivityRequestDTO;
 import com.volunnear.dtos.requests.NearbyActivitiesRequestDTO;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.activities.*;
-import com.volunnear.entitiy.infos.Organisation;
+import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.infos.Preference;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.events.ActivityCreationEvent;
@@ -15,7 +15,7 @@ import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.activities.ActivityRepository;
 import com.volunnear.repositories.activities.VolunteersInActivityRepository;
 import com.volunnear.repositories.infos.PreferenceRepository;
-import com.volunnear.services.users.OrganisationService;
+import com.volunnear.services.users.OrganizationService;
 import com.volunnear.services.users.VolunteerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class ActivityService {
     private VolunteerService volunteerService;
     private final ActivityRepository activityRepository;
-    private final OrganisationService organisationService;
+    private final OrganizationService organizationService;
     private final ApplicationEventPublisher eventPublisher;
     private final ActivitiesRepository activitiesRepository;
     private final PreferenceRepository preferenceRepository;
@@ -54,9 +54,9 @@ public class ActivityService {
     }
 
     @Transactional
-    public ResponseEntity<?> addActivityToOrganisation(AddActivityRequestDTO activityRequest, Principal principal) {
-        Optional<Organisation> organisation = organisationService.findOrganisationByUsername(principal.getName());
-        if (organisation.isEmpty()) {
+    public ResponseEntity<?> addActivityToOrganization(AddActivityRequestDTO activityRequest, Principal principal) {
+        Optional<Organization> organization = organizationService.findOrganizationByUsername(principal.getName());
+        if (organization.isEmpty()) {
             return new ResponseEntity<>("Bad username!", HttpStatus.OK);
         }
         if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())) {
@@ -74,12 +74,12 @@ public class ActivityService {
                 .dateOfPlace(Instant.now()).build();
         activityRepository.save(activity);
 
-        Organisation org = organisation.get();
+        Organization org = organization.get();
 
         Activities activities = new Activities();
         activities.setId(new ActivitiesId(org.getId(), activity.getId()));
         activities.setActivity(activity);
-        activities.setOrganisation(org);
+        activities.setOrganization(org);
         activitiesRepository.save(activities);
         sendNotificationForSubscribers(activity, "New");
 
@@ -99,42 +99,42 @@ public class ActivityService {
         activityDTO.setDescription(activity.getDescription());
         activityDTO.setDateOfPlace(activity.getDateOfPlace());
 
-        OrganisationResponseDTO organisationResponseDTO = getOrganisationResponseDTO(
-                activitiesRepository.findActivitiesByActivityId(activity.getId()).get().getOrganisation());
+        OrganizationResponseDTO organizationResponseDTO = getOrganizationResponseDTO(
+                activitiesRepository.findActivitiesByActivityId(activity.getId()).get().getOrganization());
         notificationDTO.setActivityDTO(activityDTO);
-        notificationDTO.setOrganisationResponseDTO(organisationResponseDTO);
+        notificationDTO.setOrganizationResponseDTO(organizationResponseDTO);
         eventPublisher.publishEvent(new ActivityCreationEvent(this, notificationDTO, status));
     }
 
-    public List<ActivitiesDTO> getAllActivitiesOfAllOrganisations() {
+    public List<ActivitiesDTO> getAllActivitiesOfAllOrganizations() {
         List<Activities> allActivities = activitiesRepository.findAll();
 
         return getListOfActivitiesDTOForResponse(allActivities);
     }
 
     /**
-     * Activities by organisation username from token
+     * Activities by organization username from token
      */
-    public ActivitiesDTO getMyActivities(Organisation organisation) {
-        List<Activities> allByOrganisationUsername = activitiesRepository.findAllByOrganisation_Username(organisation.getUsername());
-        return activitiesFromEntityToDto(allByOrganisationUsername, organisation);
+    public ActivitiesDTO getMyActivities(Organization organization) {
+        List<Activities> allByOrganizationUsername = activitiesRepository.findAllByOrganization_Username(organization.getUsername());
+        return activitiesFromEntityToDto(allByOrganizationUsername, organization);
     }
 
     /**
-     * All activities of current organisation by organisation name
+     * All activities of current organization by organization name
      */
-    public ResponseEntity<?> getAllActivitiesFromCurrentOrganisation(String nameOfOrganisation) {
-        List<Activities> allByOrganisationName = activitiesRepository.findAllByOrganisation_Name(nameOfOrganisation);
-        Optional<Organisation> organisationByNameOfOrganisation = organisationService.findOrganisationByNameOfOrganisation(nameOfOrganisation);
-        if (organisationByNameOfOrganisation.isEmpty()) {
-            return new ResponseEntity<>("Organisation with name " + nameOfOrganisation + " not found", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> getAllActivitiesFromCurrentOrganization(String nameOfOrganization) {
+        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Name(nameOfOrganization);
+        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationByNameOfOrganization(nameOfOrganization);
+        if (organizationByNameOfOrganization.isEmpty()) {
+            return new ResponseEntity<>("Organization with name " + nameOfOrganization + " not found", HttpStatus.BAD_REQUEST);
         }
-        ActivitiesDTO activitiesDTO = activitiesFromEntityToDto(allByOrganisationName, organisationByNameOfOrganisation.get());
+        ActivitiesDTO activitiesDTO = activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());
 
         return new ResponseEntity<>(activitiesDTO, HttpStatus.OK);
     }
 
-    public List<ActivitiesDTO> getActivitiesOfOrganisationByPreferences(List<String> preferences) {
+    public List<ActivitiesDTO> getActivitiesOfOrganizationByPreferences(List<String> preferences) {
         List<Activity> activitiesByKindOfActivity = activityRepository.findAllActivitiesByKindOfActivity_NameIgnoreCaseIn(preferences);
         List<Activities> allByActivityContains = activitiesRepository.findAllByActivityIn(activitiesByKindOfActivity);
         return getListOfActivitiesDTOForResponse(allByActivityContains);
@@ -142,14 +142,14 @@ public class ActivityService {
 
 
     /**
-     * Delete activity by id and from org principal (organisation data)
+     * Delete activity by id and from org principal (organization data)
      */
     @SneakyThrows
     @Transactional
     public ResponseEntity<?> deleteActivityById(Integer id, Principal principal) {
         Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(id);
 
-        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganisation().getUsername())) {
+        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
             return new ResponseEntity<>("Bad id", HttpStatus.BAD_REQUEST);
         }
         activitiesRepository.delete(activityById.get());
@@ -181,7 +181,7 @@ public class ActivityService {
 
     public ResponseEntity<?> updateActivityInformation(Integer idOfActivity, AddActivityRequestDTO activityRequest, Principal principal) {
         Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(idOfActivity);
-        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganisation().getUsername())) {
+        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
             return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
         }
 
@@ -232,16 +232,16 @@ public class ActivityService {
         return new ResponseEntity<>(activitiesByPlace, HttpStatus.OK);
     }
 
-    public Optional<Activities> findActivityByOrganisationAndIdOfActivity(Principal principal, Integer idOfActivity) {
-        return activitiesRepository.findByOrganisation_UsernameAndActivity_Id(principal.getName(), idOfActivity);
+    public Optional<Activities> findActivityByOrganizationAndIdOfActivity(Principal principal, Integer idOfActivity) {
+        return activitiesRepository.findByOrganization_UsernameAndActivity_Id(principal.getName(), idOfActivity);
     }
 
     /**
      * Methods to convert entities from DB to DTO for response
      */
-    private ActivitiesDTO activitiesFromEntityToDto(List<Activities> activitiesByAppUser, Organisation organisation) {
+    private ActivitiesDTO activitiesFromEntityToDto(List<Activities> activitiesByAppUser, Organization organization) {
         ActivitiesDTO activitiesDTO = new ActivitiesDTO();
-        activitiesDTO.setOrganisationResponseDTO(getOrganisationResponseDTO(organisation));
+        activitiesDTO.setOrganizationResponseDTO(getOrganizationResponseDTO(organization));
         if (!activitiesByAppUser.isEmpty()) {
             for (Activities activities : activitiesByAppUser) {
                 activitiesDTO.addActivity(new ActivityDTO(activities.getActivity().getId(),
@@ -257,14 +257,14 @@ public class ActivityService {
         return activitiesDTO;
     }
 
-    private OrganisationResponseDTO getOrganisationResponseDTO(Organisation organisation) {
-        return new OrganisationResponseDTO(
-                organisation.getId(),
-                organisation.getName(),
-                organisation.getCountry(),
-                organisation.getCity(),
-                organisation.getAddress(),
-                organisation.getEmail()
+    private OrganizationResponseDTO getOrganizationResponseDTO(Organization organization) {
+        return new OrganizationResponseDTO(
+                organization.getId(),
+                organization.getName(),
+                organization.getCountry(),
+                organization.getCity(),
+                organization.getAddress(),
+                organization.getEmail()
         );
     }
 
@@ -272,18 +272,18 @@ public class ActivityService {
     private List<ActivitiesDTO> getListOfActivitiesDTOForResponse(List<Activities> activities) {
         List<ActivitiesDTO> responseActivities = new ArrayList<>();
 
-        Map<Organisation, List<Activity>> activitiesByOrganisationMap = activities.stream()
-                .collect(Collectors.groupingBy(Activities::getOrganisation,
+        Map<Organization, List<Activity>> activitiesByOrganizationMap = activities.stream()
+                .collect(Collectors.groupingBy(Activities::getOrganization,
                         Collectors.mapping(Activities::getActivity, Collectors.toList())));
 
-        for (Map.Entry<Organisation, List<Activity>> organisationWithActivity : activitiesByOrganisationMap.entrySet()) {
-            Organisation organisation = organisationWithActivity.getKey();
-            List<Activity> activitiesList = organisationWithActivity.getValue();
+        for (Map.Entry<Organization, List<Activity>> organizationWithActivity : activitiesByOrganizationMap.entrySet()) {
+            Organization organization = organizationWithActivity.getKey();
+            List<Activity> activitiesList = organizationWithActivity.getValue();
             List<ActivityDTO> activityDtoList = activitiesList.stream()
                     .map(this::activityToDTO)
                     .collect(Collectors.toList());
 
-            ActivitiesDTO activitiesDto = new ActivitiesDTO(activityDtoList, getOrganisationResponseDTO(organisation));
+            ActivitiesDTO activitiesDto = new ActivitiesDTO(activityDtoList, getOrganizationResponseDTO(organization));
             responseActivities.add(activitiesDto);
         }
 

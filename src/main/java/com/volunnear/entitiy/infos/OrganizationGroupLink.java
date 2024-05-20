@@ -8,16 +8,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "organisation_group_links")
-public class OrganisationGroupLink {
+@Table(name = "organization_group_links")
+public class OrganizationGroupLink {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_link_id", nullable = false)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "organisation_id")
-    private Organisation organisation;
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
     @Size(max = 45)
     @Column(name = "social_network", length = 45)

@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface VolunteersSubscriptionRepository extends JpaRepository<VolunteersSubscription, VolunteersSubscriptionId> {
-    boolean existsByVolunteer_UsernameAndOrganisation_Id(String username, Integer id);
+    boolean existsByVolunteer_UsernameAndOrganization_Id(String username, Integer id);
 
-    Optional<VolunteersSubscription> findByVolunteer_UsernameAndOrganisation_Id(String username, Integer id);
+    Optional<VolunteersSubscription> findByVolunteer_UsernameAndOrganization_Id(String username, Integer id);
 
     List<VolunteersSubscription> findAllByVolunteer_Username(String username);
 
-    List<VolunteersSubscription> findAllByOrganisation_Id(Integer id);
+    List<VolunteersSubscription> findAllByOrganization_Id(Integer id);
 
 }

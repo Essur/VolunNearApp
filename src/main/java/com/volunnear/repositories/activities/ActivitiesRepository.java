@@ -11,13 +11,13 @@ import java.util.Optional;
 public interface ActivitiesRepository extends JpaRepository<Activities, Integer> {
     Optional<Activities> findActivitiesByActivityId(Integer id);
 
-    List<Activities> findAllByOrganisation_Username(String username);
+    List<Activities> findAllByOrganization_Username(String username);
 
-    List<Activities> findAllByOrganisation_Name(String name);
+    List<Activities> findAllByOrganization_Name(String name);
 
     List<Activities> findAllByActivityIn(List<Activity> activities);
 
     List<Activities> findAllByActivity_CountryAndActivity_City(String country, String city);
 
-    Optional<Activities> findByOrganisation_UsernameAndActivity_Id(String username, Integer id);
+    Optional<Activities> findByOrganization_UsernameAndActivity_Id(String username, Integer id);
 }

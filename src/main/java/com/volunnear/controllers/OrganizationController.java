@@ -2,10 +2,10 @@ package com.volunnear.controllers;
 
 import com.volunnear.Routes;
 import com.volunnear.dtos.response.ActivitiesDTO;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
-import com.volunnear.entitiy.infos.Organisation;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
+import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.services.activities.ActivityService;
-import com.volunnear.services.users.OrganisationService;
+import com.volunnear.services.users.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,25 +20,25 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class OrganisationController {
+public class OrganizationController {
     private final ActivityService activityService;
-    private final OrganisationService organisationService;
+    private final OrganizationService organizationService;
 
-    @Operation(summary = "Get all organisations", description = "Returns List<OrganisationResponseDTO>")
-    @GetMapping(value = Routes.GET_ALL_ORGANISATIONS)
-    public List<OrganisationResponseDTO> getAllOrganisations() {
-        return organisationService.getAllOrganisationsWithInfo();
+    @Operation(summary = "Get all organizations", description = "Returns List<OrganizationResponseDTO>")
+    @GetMapping(value = Routes.GET_ALL_ORGANIZATIONS)
+    public List<OrganizationResponseDTO> getAllOrganizations() {
+        return organizationService.getAllOrganizationsWithInfo();
     }
 
-    @Operation(summary = "Get all organisations", description = "Returns ActivitiesDTO")
+    @Operation(summary = "Get all organizations", description = "Returns ActivitiesDTO")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Activities dto",
                     content = @Content(schema = @Schema(implementation = ActivitiesDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad token, try again!")
     })
-    @GetMapping(value = Routes.GET_ORGANISATION_PROFILE)
-    public ActivitiesDTO getOrganisationProfile(Principal principal) {
-        Organisation organisationProfile = organisationService.getOrganisationProfile(principal);
-        return activityService.getMyActivities(organisationProfile);
+    @GetMapping(value = Routes.GET_ORGANIZATION_PROFILE)
+    public ActivitiesDTO getOrganizationProfile(Principal principal) {
+        Organization organizationProfile = organizationService.getOrganizationProfile(principal);
+        return activityService.getMyActivities(organizationProfile);
     }
 }

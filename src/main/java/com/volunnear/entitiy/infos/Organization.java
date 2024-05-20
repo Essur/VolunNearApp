@@ -9,12 +9,12 @@ import lombok.*;
 @Entity
 @Builder
 @NoArgsConstructor
-@Table(name = "organisations")
+@Table(name = "organizations")
 @AllArgsConstructor
-public class Organisation {
+public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "organisation_id", nullable = false)
+    @Column(name = "organization_id", nullable = false)
     private Integer id;
 
     @Size(max = 45)

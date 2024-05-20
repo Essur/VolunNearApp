@@ -30,7 +30,7 @@ public class Feedback {
     private Volunteer volunteerFeedbackAuthor;
 
     @ManyToOne
-    @JoinColumn(name = "target_organisation_id")
-    private Organisation targetOrganisation;
+    @JoinColumn(name = "target_organization_id")
+    private Organization targetOrganization;
 
 }

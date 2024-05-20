@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganisationResponseDTO {
+public class OrganizationResponseDTO {
     private Integer id;
-    private String nameOfOrganisation;
+    private String nameOfOrganization;
     private String country;
     private String city;
     private String address;

@@ -22,11 +22,11 @@ public class RecommendationService {
         if (preferences == null) {
             return new ResponseEntity<>("In your profile no preferences set", HttpStatus.BAD_REQUEST);
         }
-        List<ActivitiesDTO> organisationsWithActivitiesByPreferences = activityService.getActivitiesOfOrganisationByPreferences(preferences);
-        if (organisationsWithActivitiesByPreferences.isEmpty()) {
+        List<ActivitiesDTO> organizationsWithActivitiesByPreferences = activityService.getActivitiesOfOrganizationByPreferences(preferences);
+        if (organizationsWithActivitiesByPreferences.isEmpty()) {
             return new ResponseEntity<>("Activities by your preferences not founded", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(organisationsWithActivitiesByPreferences, HttpStatus.OK);
+        return new ResponseEntity<>(organizationsWithActivitiesByPreferences, HttpStatus.OK);
     }
 
     private List<String> learnPreferences(Principal principal) {

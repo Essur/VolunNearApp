@@ -18,8 +18,8 @@ public class ActivityChatLink {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "organisation_id")
-    private Organisation organisation;
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
     @ManyToOne
     @JoinColumn(name = "activity_id")

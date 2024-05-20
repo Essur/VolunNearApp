@@ -33,30 +33,30 @@ public class SecurityConfig {
 
                         .requestMatchers(Routes.VOLUNTEER + "/**",
                                 Routes.UPDATE_VOLUNTEER_PROFILE,
-                                Routes.POST_FEEDBACK_ABOUT_ORGANISATION,
-                                Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANISATION,
-                                Routes.DELETE_FEEDBACK_ABOUT_ORGANISATION,
+                                Routes.POST_FEEDBACK_ABOUT_ORGANIZATION,
+                                Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANIZATION,
+                                Routes.DELETE_FEEDBACK_ABOUT_ORGANIZATION,
                                 Routes.LOCATION + "/**",
                                 Routes.NOTIFICATIONS + "/**").hasRole("VOLUNTEER")
 
-                        .requestMatchers(Routes.UPDATE_ORGANISATION_PROFILE,
+                        .requestMatchers(Routes.UPDATE_ORGANIZATION_PROFILE,
                                 Routes.ADD_ACTIVITY,
                                 Routes.GET_MY_ACTIVITIES,
                                 Routes.UPDATE_ACTIVITY_INFORMATION,
                                 Routes.DELETE_CURRENT_ACTIVITY_BY_ID,
-                                Routes.GET_ORGANISATION_PROFILE,
+                                Routes.GET_ORGANIZATION_PROFILE,
                                 Routes.ADD_COMMUNITY_LINK,
-                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANISATION")
+                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANIZATION")
 
                         .requestMatchers("/api/hello",
-                                Routes.GET_ALL_ORGANISATIONS,
-                                Routes.ACTIVITY_CURRENT_ORGANISATION,
-                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANISATIONS,
-                                Routes.GET_FEEDBACKS_OF_ALL_ORGANISATIONS,
-                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANISATION,
+                                Routes.GET_ALL_ORGANIZATIONS,
+                                Routes.ACTIVITY_CURRENT_ORGANIZATION,
+                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
                                 Routes.GET_CHAT_LINK_BY_ACTIVITY,
-                                Routes.GET_COMMUNITY_LINK_BY_ORGANISATION)
-                        .hasAnyRole("VOLUNTEER", "ORGANISATION")
+                                Routes.GET_COMMUNITY_LINK_BY_ORGANIZATION)
+                        .hasAnyRole("VOLUNTEER", "ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());

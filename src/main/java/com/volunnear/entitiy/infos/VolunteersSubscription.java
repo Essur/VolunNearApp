@@ -17,9 +17,9 @@ public class VolunteersSubscription {
     @JoinColumn(name = "volunteer_id", nullable = false)
     private Volunteer volunteer;
 
-    @MapsId("organisationId")
+    @MapsId("organizationId")
     @ManyToOne(optional = false)
-    @JoinColumn(name = "organisation_id", nullable = false)
-    private Organisation organisation;
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 
 }

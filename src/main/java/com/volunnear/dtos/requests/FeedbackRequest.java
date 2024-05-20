@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeedbackRequest {
-    private Integer idOfOrganisation;
+    private Integer idOfOrganization;
     private int rate;
     private String feedbackDescription;
 }

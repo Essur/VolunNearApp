@@ -24,21 +24,21 @@ public class VolunteersSubscriptionId implements Serializable {
     private Integer volunteerId;
 
     @NotNull
-    @Column(name = "organisation_id", nullable = false)
-    private Integer organisationId;
+    @Column(name = "organization_id", nullable = false)
+    private Integer organizationId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         VolunteersSubscriptionId entity = (VolunteersSubscriptionId) o;
-        return Objects.equals(this.organisationId, entity.organisationId) &&
+        return Objects.equals(this.organizationId, entity.organizationId) &&
                 Objects.equals(this.volunteerId, entity.volunteerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(organisationId, volunteerId);
+        return Objects.hash(organizationId, volunteerId);
     }
 
 }

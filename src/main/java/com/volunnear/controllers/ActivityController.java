@@ -25,8 +25,8 @@ public class ActivityController {
     private final ActivityService activityService;
 
     @PostMapping(value = Routes.ADD_ACTIVITY, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addActivityToOrganisation(@RequestBody AddActivityRequestDTO activityRequest, Principal principal) {
-        return activityService.addActivityToOrganisation(activityRequest, principal);
+    public ResponseEntity<?> addActivityToOrganization(@RequestBody AddActivityRequestDTO activityRequest, Principal principal) {
+        return activityService.addActivityToOrganization(activityRequest, principal);
     }
 
     @PostMapping(value = Routes.JOIN_TO_ACTIVITY)
@@ -40,20 +40,20 @@ public class ActivityController {
         return activityService.updateActivityInformation(idOfActivity, activityRequestDTO, principal);
     }
 
-    @GetMapping(value = Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANISATIONS)
-    public List<ActivitiesDTO> getAllActivitiesOfAllOrganisations() {
-        return activityService.getAllActivitiesOfAllOrganisations();
+    @GetMapping(value = Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS)
+    public List<ActivitiesDTO> getAllActivitiesOfAllOrganizations() {
+        return activityService.getAllActivitiesOfAllOrganizations();
     }
 
-    @Operation(summary = "Get activities of current organisation", description = "Returns ActivitiesDTO")
+    @Operation(summary = "Get activities of current organization", description = "Returns ActivitiesDTO")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Activities dto",
                     content = @Content(schema = @Schema(implementation = ActivitiesDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Organisation with name not found")
+            @ApiResponse(responseCode = "400", description = "Organization with name not found")
     })
-    @GetMapping(value = Routes.ACTIVITY_CURRENT_ORGANISATION)
-    public ResponseEntity<?> getAllActivitiesOfCurrentOrganisation(@RequestParam String nameOfOrganisation) {
-        return activityService.getAllActivitiesFromCurrentOrganisation(nameOfOrganisation);
+    @GetMapping(value = Routes.ACTIVITY_CURRENT_ORGANIZATION)
+    public ResponseEntity<?> getAllActivitiesOfCurrentOrganization(@RequestParam String nameOfOrganization) {
+        return activityService.getAllActivitiesFromCurrentOrganization(nameOfOrganization);
     }
 
     @Operation(summary = "Get activities nearby", description = "Returns List<ActivitiesDTO>")

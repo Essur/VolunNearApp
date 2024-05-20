@@ -20,8 +20,8 @@ import java.util.Objects;
 public class ActivitiesId implements Serializable {
     private static final long serialVersionUID = 3828002192702928374L;
     @NotNull
-    @Column(name = "organisation_id", nullable = false)
-    private Integer organisationId;
+    @Column(name = "organization_id", nullable = false)
+    private Integer organizationId;
 
     @NotNull
     @Column(name = "activity_id", nullable = false)
@@ -33,11 +33,11 @@ public class ActivitiesId implements Serializable {
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         ActivitiesId entity = (ActivitiesId) o;
         return Objects.equals(this.activityId, entity.activityId) &&
-                Objects.equals(this.organisationId, entity.organisationId);
+                Objects.equals(this.organizationId, entity.organizationId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(activityId, organisationId);
+        return Objects.hash(activityId, organizationId);
     }
 }

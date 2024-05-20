@@ -27,7 +27,7 @@ public class EventMailSenderService {
     @EventListener(ActivityCreationEvent.class)
     public void sendNotificationForSubscribers(ActivityCreationEvent activityCreationEvent) {
         ActivityNotificationDTO notificationDTO = activityCreationEvent.getNotificationDTO();
-        List<VolunteersSubscription> subscriptions = subscriptionRepository.findAllByOrganisation_Id(notificationDTO.getOrganisationResponseDTO().getId());
+        List<VolunteersSubscription> subscriptions = subscriptionRepository.findAllByOrganization_Id(notificationDTO.getOrganizationResponseDTO().getId());
         Map<String, String> usernameAndEmailMap = subscriptions.stream().collect(Collectors.toMap(
                 volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getUsername(),
                 volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getEmail(),
@@ -51,7 +51,7 @@ public class EventMailSenderService {
 
     private static SimpleMailMessage getSimpleMailMessage(String status, ActivityNotificationDTO notificationDTO, ActivityDTO activityDTO) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setSubject(status + " activity from " + notificationDTO.getOrganisationResponseDTO().getNameOfOrganisation() + " !");
+        mailMessage.setSubject(status + " activity from " + notificationDTO.getOrganizationResponseDTO().getNameOfOrganization() + " !");
         mailMessage.setText("There is info about activity: "
                 + "\nTitle: " + activityDTO.getTitle()
                 + "\nKind of activity: " + activityDTO.getKindOfActivity()

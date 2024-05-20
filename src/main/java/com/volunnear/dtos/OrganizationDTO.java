@@ -1,4 +1,4 @@
-package com.volunnear.dtos.requests;
+package com.volunnear.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegistrationOrganisationRequestDTO {
-    private String username;
-    private String password;
-    private String email;
+public class OrganizationDTO {
+    private Credentials credentials;
     private String nameOfOrganisation;
     private String country;
     private String city;

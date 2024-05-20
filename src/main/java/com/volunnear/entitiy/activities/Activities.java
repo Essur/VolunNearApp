@@ -1,6 +1,6 @@
 package com.volunnear.entitiy.activities;
 
-import com.volunnear.entitiy.infos.Organisation;
+import com.volunnear.entitiy.infos.Organization;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,10 +17,10 @@ public class Activities {
     @EmbeddedId
     private ActivitiesId id;
 
-    @MapsId("organisationId")
+    @MapsId("organizationId")
     @ManyToOne(optional = false)
-    @JoinColumn(name = "organisation_id", nullable = false)
-    private Organisation organisation;
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 
     @MapsId("activityId")
     @ManyToOne(optional = false)

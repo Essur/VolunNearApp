@@ -1,12 +1,12 @@
 package com.volunnear.services.notifications;
 
-import com.volunnear.dtos.response.OrganisationResponseDTO;
-import com.volunnear.entitiy.infos.Organisation;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
+import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.entitiy.infos.VolunteersSubscription;
 import com.volunnear.entitiy.infos.VolunteersSubscriptionId;
 import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
-import com.volunnear.services.users.OrganisationService;
+import com.volunnear.services.users.OrganizationService;
 import com.volunnear.services.users.VolunteerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +23,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EmailNotificationService {
     private final VolunteerService volunteerService;
-    private final OrganisationService organisationService;
+    private final OrganizationService organizationService;
     private final VolunteersSubscriptionRepository subscriptionRepository;
 
 
     @Transactional
-    public ResponseEntity<String> subscribeToNotificationByIdOfOrganisation(Integer idOfOrganisation, Principal principal) {
-        Optional<Organisation> organisationById = organisationService.findOrganisationById(idOfOrganisation);
-        if (organisationById.isEmpty()) {
-            return new ResponseEntity<>("Bad id of organisation", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> subscribeToNotificationByIdOfOrganization(Integer idOfOrganization, Principal principal) {
+        Optional<Organization> organizationById = organizationService.findOrganizationById(idOfOrganization);
+        if (organizationById.isEmpty()) {
+            return new ResponseEntity<>("Bad id of organization", HttpStatus.BAD_REQUEST);
         }
-        if (subscriptionRepository.existsByVolunteer_UsernameAndOrganisation_Id(principal.getName(), idOfOrganisation)) {
+        if (subscriptionRepository.existsByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization)) {
             return new ResponseEntity<>("Fail, you are already subscribed", HttpStatus.BAD_REQUEST);
         }
         Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
@@ -41,16 +41,16 @@ public class EmailNotificationService {
             return new ResponseEntity<>("You are not volunteer", HttpStatus.BAD_REQUEST);
         }
         VolunteersSubscription subscription = new VolunteersSubscription();
-        subscription.setId(new VolunteersSubscriptionId(volunteerInfo.get().getId(), organisationById.get().getId()));
-        subscription.setOrganisation(organisationById.get());
+        subscription.setId(new VolunteersSubscriptionId(volunteerInfo.get().getId(), organizationById.get().getId()));
+        subscription.setOrganization(organizationById.get());
         subscription.setVolunteer(volunteerInfo.get());
         subscriptionRepository.save(subscription);
         return new ResponseEntity<>("Successfully subscribed to notifications", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> unsubscribeFromNotificationOfOrganisation(Integer idOfOrganisation, Principal principal) {
+    public ResponseEntity<String> unsubscribeFromNotificationOfOrganization(Integer idOfOrganization, Principal principal) {
         Optional<VolunteersSubscription> subscriptionById = subscriptionRepository.
-                findByVolunteer_UsernameAndOrganisation_Id(principal.getName(), idOfOrganisation);
+                findByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization);
         if (subscriptionById.isEmpty() || !principal.getName().equals(subscriptionById.get().getVolunteer().getUsername())) {
             return new ResponseEntity<>("Bad id of subscription", HttpStatus.BAD_REQUEST);
         }
@@ -63,10 +63,10 @@ public class EmailNotificationService {
         if (allByUserVolunteerUsername.isEmpty()) {
             return new ResponseEntity<>("List of subscriptions is empty!", HttpStatus.BAD_REQUEST);
         }
-        List<OrganisationResponseDTO> organisations = allByUserVolunteerUsername.stream().map(
-                subscription -> organisationService.getResponseDTOForSubscriptions(subscription.getOrganisation())).collect(Collectors.toList());
+        List<OrganizationResponseDTO> organizations = allByUserVolunteerUsername.stream().map(
+                subscription -> organizationService.getResponseDTOForSubscriptions(subscription.getOrganization())).collect(Collectors.toList());
 
-        return new ResponseEntity<>(organisations, HttpStatus.OK);
+        return new ResponseEntity<>(organizations, HttpStatus.OK);
     }
 
 }
