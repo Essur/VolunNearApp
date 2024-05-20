@@ -23,7 +23,6 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -60,7 +59,7 @@ public class ActivityService {
         if (organisation.isEmpty()) {
             return new ResponseEntity<>("Bad username!", HttpStatus.OK);
         }
-        if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())){
+        if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())) {
             Preference newPreference = new Preference();
             newPreference.setName(activityRequest.getKindOfActivity());
             preferenceRepository.save(newPreference);
@@ -84,7 +83,7 @@ public class ActivityService {
         activitiesRepository.save(activities);
         sendNotificationForSubscribers(activity, "New");
 
-        return new ResponseEntity<>("Activity added",HttpStatus.OK);
+        return new ResponseEntity<>("Activity added", HttpStatus.OK);
     }
 
     @Async
@@ -172,7 +171,7 @@ public class ActivityService {
         }
 
         VolunteersInActivity volunteerInActivity = new VolunteersInActivity();
-        volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(),volunteerInfo.get().getId()));
+        volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(), volunteerInfo.get().getId()));
         volunteerInActivity.setActivity(activityById.get());
         volunteerInActivity.setVolunteer(volunteerInfo.get());
         volunteerInActivity.setDateOfEntry(Instant.now());

@@ -26,9 +26,10 @@ public class OrganisationService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final OrganisationRepository organisationRepository;
 
-    public Organisation getOrganisationProfile(Principal principal){
+    public Organisation getOrganisationProfile(Principal principal) {
         return organisationRepository.findOrganisationByUsername(principal.getName()).get();
     }
+
     public List<OrganisationResponseDTO> getAllOrganisationsWithInfo() {
         List<Organisation> organisationInfos = organisationRepository.findAll();
         List<OrganisationResponseDTO> organisationResponseDTO = new ArrayList<>();

@@ -2,7 +2,6 @@ package com.volunnear.entitiy.activities;
 
 import com.volunnear.entitiy.infos.Organisation;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
