@@ -36,7 +36,7 @@ public class Activity {
     @Column(name = "description", length = 225)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "kind_of_activity")
     private Preference kindOfActivity;
 

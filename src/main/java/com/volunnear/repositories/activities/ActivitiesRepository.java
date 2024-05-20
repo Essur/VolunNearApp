@@ -1,7 +1,6 @@
 package com.volunnear.repositories.activities;
 
 import com.volunnear.entitiy.activities.Activities;
-import com.volunnear.entitiy.activities.ActivitiesId;
 import com.volunnear.entitiy.activities.Activity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface ActivitiesRepository extends JpaRepository<Activities, ActivitiesId> {
+public interface ActivitiesRepository extends JpaRepository<Activities, Integer> {
     Optional<Activities> findActivitiesByActivityId(Integer id);
 
     List<Activities> findAllByOrganisation_Username(String username);

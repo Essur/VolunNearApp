@@ -22,10 +22,13 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class OrganisationService {
-    private final BCryptPasswordEncoder passwordEncoder;
     private final AppUserRepository appUserRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
     private final OrganisationRepository organisationRepository;
 
+    public Organisation getOrganisationProfile(Principal principal){
+        return organisationRepository.findOrganisationByUsername(principal.getName()).get();
+    }
     public List<OrganisationResponseDTO> getAllOrganisationsWithInfo() {
         List<Organisation> organisationInfos = organisationRepository.findAll();
         List<OrganisationResponseDTO> organisationResponseDTO = new ArrayList<>();
@@ -42,7 +45,7 @@ public class OrganisationService {
         AppUser organisation = new AppUser();
         organisation.setUsername(registrationOrganisationRequestDTO.getUsername());
         organisation.setPassword(passwordEncoder.encode(registrationOrganisationRequestDTO.getPassword()));
-        organisation.setRoles(Set.of("ROLE_ORGANISATION"));
+        organisation.setRoles(Set.of("ORGANISATION"));
         appUserRepository.save(organisation);
         addAdditionalDataAboutOrganisation(registrationOrganisationRequestDTO);
         return new ResponseEntity<>("Registration successful", HttpStatus.OK);

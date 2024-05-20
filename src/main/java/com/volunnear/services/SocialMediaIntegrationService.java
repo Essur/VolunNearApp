@@ -54,7 +54,7 @@ public class SocialMediaIntegrationService {
         activityChatLink.setActivityName(linkByActivityId.get().getActivity().getTitle());
         activityChatLink.setActivityId(linkByActivityId.get().getActivity().getId());
         activityChatLink.setSocialNetwork(linkByActivityId.get().getSocialNetwork());
-        return new ResponseEntity<>("There`s link for chat of activity " + activityChatLink.getLink(), HttpStatus.OK);
+        return new ResponseEntity<>("There`s link for chat of activity " + activityChatLink.getLink() + " social network: " + activityChatLink.getSocialNetwork(), HttpStatus.OK);
     }
 
     public ResponseEntity<?> addCommunityLink(AddCommunityLinkRequestDTO communityLinkRequestDTO, Principal principal) {
@@ -79,6 +79,7 @@ public class SocialMediaIntegrationService {
             return new ResponseEntity<>("Bad id of organisation!", HttpStatus.BAD_REQUEST);
         }
         OrganisationGroupLink organisationGroupLinkResponse = organisationGroupLink.get();
-        return new ResponseEntity<>("There`s link for community of organisation " + organisationGroupLinkResponse.getLink(), HttpStatus.OK);
+        return new ResponseEntity<>("There`s link for community of organisation " + organisationGroupLinkResponse.getLink() +
+                " social network: " + organisationGroupLinkResponse.getSocialNetwork(), HttpStatus.OK);
     }
 }

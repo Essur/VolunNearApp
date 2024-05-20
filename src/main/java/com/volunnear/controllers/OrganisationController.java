@@ -3,6 +3,7 @@ package com.volunnear.controllers;
 import com.volunnear.Routes;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.OrganisationResponseDTO;
+import com.volunnear.entitiy.infos.Organisation;
 import com.volunnear.services.activities.ActivityService;
 import com.volunnear.services.users.OrganisationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +38,7 @@ public class OrganisationController {
     })
     @GetMapping(value = Routes.GET_ORGANISATION_PROFILE)
     public ActivitiesDTO getOrganisationProfile(Principal principal) {
-        return activityService.getMyActivities(principal);
+        Organisation organisationProfile = organisationService.getOrganisationProfile(principal);
+        return activityService.getMyActivities(organisationProfile);
     }
 }

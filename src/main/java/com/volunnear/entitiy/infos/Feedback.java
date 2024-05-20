@@ -25,11 +25,11 @@ public class Feedback {
     @Column(name = "description", nullable = false, length = 225)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "volunteer_feedback_author_id")
     private Volunteer volunteerFeedbackAuthor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "target_organisation_id")
     private Organisation targetOrganisation;
 

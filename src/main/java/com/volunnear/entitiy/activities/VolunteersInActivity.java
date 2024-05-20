@@ -16,12 +16,12 @@ public class VolunteersInActivity {
     private VolunteersInActivityId id;
 
     @MapsId("volunteerId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "volunteer_id", nullable = false)
     private Volunteer volunteer;
 
     @MapsId("activityId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "activity_id", nullable = false)
     private Activity activity;
 

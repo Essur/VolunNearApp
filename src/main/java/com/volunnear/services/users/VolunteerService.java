@@ -7,6 +7,7 @@ import com.volunnear.dtos.response.VolunteerProfileResponseDTO;
 import com.volunnear.entitiy.infos.Preference;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.entitiy.infos.VolunteerPreference;
+import com.volunnear.entitiy.infos.VolunteerPreferenceId;
 import com.volunnear.entitiy.users.AppUser;
 import com.volunnear.repositories.infos.PreferenceRepository;
 import com.volunnear.repositories.infos.VolunteerPreferenceRepository;
@@ -32,7 +33,7 @@ import java.util.Set;
 public class VolunteerService {
     private ActivityService activityService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final AppUserRepository redisRepository;
+    private final AppUserRepository appUserRepository;
     private final VolunteerRepository volunteerRepository;
     private final PreferenceRepository preferenceRepository;
     private final VolunteerPreferenceRepository volunteerPreferenceRepository;
@@ -44,14 +45,14 @@ public class VolunteerService {
     }
 
     public ResponseEntity<?> registerVolunteer(RegistrationVolunteerRequestDTO registrationVolunteerRequestDTO) {
-        if (redisRepository.existsByUsername(registrationVolunteerRequestDTO.getUsername())) {
+        if (appUserRepository.existsByUsername(registrationVolunteerRequestDTO.getUsername())) {
             return new ResponseEntity<>("User with username " + registrationVolunteerRequestDTO.getUsername() + " already exists", HttpStatus.OK);
         }
         AppUser appUser = new AppUser();
         appUser.setUsername(registrationVolunteerRequestDTO.getUsername());
         appUser.setPassword(passwordEncoder.encode(registrationVolunteerRequestDTO.getPassword()));
-        appUser.setRoles(Set.of("ROLE_VOLUNTEER"));
-        redisRepository.save(appUser);
+        appUser.setRoles(Set.of("VOLUNTEER"));
+        appUserRepository.save(appUser);
 
         addAdditionalInfo(registrationVolunteerRequestDTO);
         return new ResponseEntity<>("Successfully registration!", HttpStatus.OK);
@@ -92,6 +93,7 @@ public class VolunteerService {
 
         for (Preference preference : preferences) {
             VolunteerPreference volunteerPreference = new VolunteerPreference();
+            volunteerPreference.setId(new VolunteerPreferenceId(volunteer.getId(), preference.getId()));
             volunteerPreference.setVolunteer(volunteer);
             volunteerPreference.setPreference(preference);
             volunteerPreferences.add(volunteerPreference);

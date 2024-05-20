@@ -13,12 +13,12 @@ public class VolunteersSubscription {
     private VolunteersSubscriptionId id;
 
     @MapsId("volunteerId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "volunteer_id", nullable = false)
     private Volunteer volunteer;
 
     @MapsId("organisationId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "organisation_id", nullable = false)
     private Organisation organisation;
 

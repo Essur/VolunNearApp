@@ -4,6 +4,7 @@ import com.volunnear.dtos.response.OrganisationResponseDTO;
 import com.volunnear.entitiy.infos.Organisation;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.entitiy.infos.VolunteersSubscription;
+import com.volunnear.entitiy.infos.VolunteersSubscriptionId;
 import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
 import com.volunnear.services.users.OrganisationService;
 import com.volunnear.services.users.VolunteerService;
@@ -40,6 +41,7 @@ public class EmailNotificationService {
             return new ResponseEntity<>("You are not volunteer", HttpStatus.BAD_REQUEST);
         }
         VolunteersSubscription subscription = new VolunteersSubscription();
+        subscription.setId(new VolunteersSubscriptionId(volunteerInfo.get().getId(), organisationById.get().getId()));
         subscription.setOrganisation(organisationById.get());
         subscription.setVolunteer(volunteerInfo.get());
         subscriptionRepository.save(subscription);

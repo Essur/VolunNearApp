@@ -13,12 +13,12 @@ public class VolunteerPreference {
     private VolunteerPreferenceId id;
 
     @MapsId("volunteerId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "volunteer_id", nullable = false)
     private Volunteer volunteer;
 
     @MapsId("preferenceId")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "preference_id", nullable = false)
     private Preference preference;
 

@@ -15,7 +15,7 @@ public class OrganisationGroupLink {
     @Column(name = "group_link_id", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "organisation_id")
     private Organisation organisation;
 

@@ -3,7 +3,9 @@ package com.volunnear.entitiy.activities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
@@ -12,6 +14,8 @@ import java.util.Objects;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class ActivitiesId implements Serializable {
     private static final long serialVersionUID = 3828002192702928374L;
@@ -36,5 +40,4 @@ public class ActivitiesId implements Serializable {
     public int hashCode() {
         return Objects.hash(activityId, organisationId);
     }
-
 }
