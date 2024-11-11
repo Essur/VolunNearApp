@@ -41,7 +41,7 @@ public class OrganizationService {
 
     public ResponseEntity<?> registerOrganization(RegistrationOrganizationRequestDTO registrationOrganizationRequestDTO) {
         if (appUserRepository.existsByUsername(registrationOrganizationRequestDTO.getUsername())) {
-            return new ResponseEntity<>("User with username " + registrationOrganizationRequestDTO.getUsername() + " already exists", HttpStatus.OK);
+            return new ResponseEntity<>("User with username " + registrationOrganizationRequestDTO.getUsername() + " already exists", HttpStatus.CONFLICT);
         }
         AppUser organization = new AppUser();
         organization.setUsername(registrationOrganizationRequestDTO.getUsername());

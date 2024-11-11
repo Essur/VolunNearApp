@@ -46,7 +46,7 @@ public class VolunteerService {
 
     public ResponseEntity<?> registerVolunteer(RegistrationVolunteerRequestDTO registrationVolunteerRequestDTO) {
         if (appUserRepository.existsByUsername(registrationVolunteerRequestDTO.getUsername())) {
-            return new ResponseEntity<>("User with username " + registrationVolunteerRequestDTO.getUsername() + " already exists", HttpStatus.OK);
+            return new ResponseEntity<>("User with username " + registrationVolunteerRequestDTO.getUsername() + " already exists", HttpStatus.CONFLICT);
         }
         AppUser appUser = new AppUser();
         appUser.setUsername(registrationVolunteerRequestDTO.getUsername());
