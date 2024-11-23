@@ -61,7 +61,13 @@ public class VolunteerService {
     public VolunteerProfileResponseDTO getVolunteerProfile(Principal principal) {
         Volunteer volunteerByUsername = volunteerRepository.findByUsername(principal.getName()).get();
         List<VolunteerPreference> volunteerPreferences = volunteerPreferenceRepository.findAllByVolunteer_Username(principal.getName());
-        List<String> preferences = volunteerPreferences.stream().map(volunteerPreference -> volunteerPreference.getPreference().getName()).toList();
+        List<VolunteerPreferenceDTO> preferences = new ArrayList<>();
+        for (VolunteerPreference volunteerPreference :volunteerPreferences) {
+            preferences.add(new VolunteerPreferenceDTO(
+                    volunteerPreference.getId().getPreferenceId(),
+                    volunteerPreference.getId().getVolunteerId(),
+                    volunteerPreference.getPreference().getName()));
+        }
 
         VolunteerProfileResponseDTO profileResponse = new VolunteerProfileResponseDTO();
 
@@ -69,9 +75,12 @@ public class VolunteerService {
         profileResponse.setUsername(volunteerByUsername.getUsername());
         profileResponse.setFirstName(volunteerByUsername.getFirstName());
         profileResponse.setLastName(volunteerByUsername.getLastName());
-        if (preferences.isEmpty()) {
-            profileResponse.setPreferences(List.of("Preferences is empty"));
-        } else profileResponse.setPreferences(preferences);
+        if (!preferences.isEmpty()) {
+            profileResponse.setPreferences(preferences);
+
+        } else {
+            profileResponse.setPreferences(new ArrayList<>());
+        }
         profileResponse.setActivitiesDTO(activityService.getActivitiesOfVolunteer(principal));
 
         return profileResponse;
@@ -104,6 +113,16 @@ public class VolunteerService {
 
     public List<VolunteerPreference> getPreferencesOfUser(Principal principal) {
         return volunteerPreferenceRepository.findAllByVolunteer_Username(principal.getName());
+    }
+
+    public ResponseEntity<?> deletePreferenceById(Principal principal, Integer preferenceId, Integer volunteerId) {
+        VolunteerPreferenceId volPreferenceId = new VolunteerPreferenceId(preferenceId, volunteerId);
+        Volunteer volunteerInfo = getVolunteerInfo(principal).get();
+        boolean result = volunteerPreferenceRepository.deletePreferenceByIdAndVolunteer(volPreferenceId, volunteerInfo);
+        if (result) {
+            new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Error, preference was not removed", HttpStatus.BAD_REQUEST);
     }
 
     public Optional<Volunteer> getVolunteerInfo(Principal principal) {

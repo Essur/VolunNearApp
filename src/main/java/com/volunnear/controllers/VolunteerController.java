@@ -14,10 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -47,5 +44,16 @@ public class VolunteerController {
     @GetMapping(value = Routes.GET_RECOMMENDATION_BY_PREFERENCES)
     public ResponseEntity<?> getRecommendationsByPreferencesOfUser(Principal principal) {
         return recommendationService.generateRecommendations(principal);
+    }
+
+    @Operation(summary = "Remove preference from profile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Preferences removed",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ActivitiesDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "No preference or bad id of user")
+    })
+    @DeleteMapping(value = Routes.DELETE_PREFERENCE_BY_ID)
+    public ResponseEntity<?> DeletePreferenceById(Principal principal, Integer preferenceId, Integer volunteerId) {
+        return volunteerService.deletePreferenceById(principal, preferenceId, volunteerId);
     }
 }
