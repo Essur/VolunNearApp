@@ -12,4 +12,6 @@ public interface PreferenceRepository extends JpaRepository<Preference, Integer>
     List<Preference> findAllByNameIgnoreCaseIn(List<String> preferences);
 
     boolean existsPreferenceByNameIgnoreCase(String preference);
+
+    Optional<Preference> findPreferenceById(Integer id);
 }

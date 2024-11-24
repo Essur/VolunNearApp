@@ -1,6 +1,7 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.requests.DeletePreferenceFromVolunteerProfileRequestDTO;
 import com.volunnear.dtos.requests.PreferencesRequestDTO;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.VolunteerProfileResponseDTO;
@@ -48,12 +49,12 @@ public class VolunteerController {
 
     @Operation(summary = "Remove preference from profile")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Preferences removed",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ActivitiesDTO.class)))),
-            @ApiResponse(responseCode = "400", description = "No preference or bad id of user")
+            @ApiResponse(responseCode = "200", description = "Preference removed"),
+            @ApiResponse(responseCode = "400", description = "Preference not found"),
+            @ApiResponse(responseCode = "404", description = "Error, preference was not removed")
     })
     @DeleteMapping(value = Routes.DELETE_PREFERENCE_BY_ID)
-    public ResponseEntity<?> DeletePreferenceById(Principal principal, Integer preferenceId, Integer volunteerId) {
-        return volunteerService.deletePreferenceById(principal, preferenceId, volunteerId);
+    public ResponseEntity<?> deletePreferenceById(@RequestBody DeletePreferenceFromVolunteerProfileRequestDTO preferenceId, Principal principal) {
+        return volunteerService.deletePreferenceById(preferenceId, principal);
     }
 }

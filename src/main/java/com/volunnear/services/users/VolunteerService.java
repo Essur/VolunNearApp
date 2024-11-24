@@ -1,5 +1,6 @@
 package com.volunnear.services.users;
 
+import com.volunnear.dtos.requests.DeletePreferenceFromVolunteerProfileRequestDTO;
 import com.volunnear.dtos.requests.PreferencesRequestDTO;
 import com.volunnear.dtos.requests.RegistrationVolunteerRequestDTO;
 import com.volunnear.dtos.requests.UpdateVolunteerInfoRequestDTO;
@@ -14,7 +15,10 @@ import com.volunnear.repositories.infos.VolunteerPreferenceRepository;
 import com.volunnear.repositories.infos.VolunteerRepository;
 import com.volunnear.repositories.users.AppUserRepository;
 import com.volunnear.services.activities.ActivityService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -37,6 +41,7 @@ public class VolunteerService {
     private final VolunteerRepository volunteerRepository;
     private final PreferenceRepository preferenceRepository;
     private final VolunteerPreferenceRepository volunteerPreferenceRepository;
+    private final Logger logger = LoggerFactory.getLogger(VolunteerService.class);
 
     @Lazy
     @Autowired
@@ -115,12 +120,17 @@ public class VolunteerService {
         return volunteerPreferenceRepository.findAllByVolunteer_Username(principal.getName());
     }
 
-    public ResponseEntity<?> deletePreferenceById(Principal principal, Integer preferenceId, Integer volunteerId) {
-        VolunteerPreferenceId volPreferenceId = new VolunteerPreferenceId(preferenceId, volunteerId);
-        Volunteer volunteerInfo = getVolunteerInfo(principal).get();
-        boolean result = volunteerPreferenceRepository.deletePreferenceByIdAndVolunteer(volPreferenceId, volunteerInfo);
-        if (result) {
-            new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
+    @Transactional
+    public ResponseEntity<?> deletePreferenceById(DeletePreferenceFromVolunteerProfileRequestDTO preferenceId, Principal principal) {
+        Optional<Preference> preferenceById = preferenceRepository.findPreferenceById(preferenceId.getPreferenceId());
+
+        Volunteer volunteer = volunteerRepository.findByUsername(principal.getName()).get();
+        logger.info(volunteer.toString());
+        logger.info(preferenceById.toString());
+
+        if (preferenceById.isPresent()) {
+            volunteerPreferenceRepository.deleteVolunteerPreferenceByPreference_IdAndVolunteer_Id(preferenceId.getPreferenceId(), volunteer.getId());
+            return new ResponseEntity<>("Successfully deleted preference", HttpStatus.OK);
         }
         return new ResponseEntity<>("Error, preference was not removed", HttpStatus.BAD_REQUEST);
     }
