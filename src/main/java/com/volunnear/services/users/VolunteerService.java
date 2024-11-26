@@ -152,6 +152,18 @@ public class VolunteerService {
         return new ResponseEntity<>("Data was successfully updated", HttpStatus.OK);
     }
 
+    @Transactional
+    public ResponseEntity<String> deleteVolunteerProfile(Principal principal) {
+        Optional<Volunteer> volunteer = volunteerRepository.findByUsername(principal.getName());
+        if (volunteer.isPresent()) {
+            volunteerPreferenceRepository.deleteAllByVolunteer_Username(volunteer.get().getUsername());
+            volunteerRepository.delete(volunteer.get());
+            appUserRepository.deleteAppUserByUsername(principal.getName());
+        } else {
+            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Data was successfully deleted", HttpStatus.OK);
+    }
 
     public boolean isUserAreVolunteer(Volunteer volunteer) {
         return volunteerRepository.existsByUsername(volunteer.getUsername());

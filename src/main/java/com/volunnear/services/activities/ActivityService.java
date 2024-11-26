@@ -77,7 +77,7 @@ public class ActivityService {
         Organization org = organization.get();
 
         Activities activities = new Activities();
-        activities.setId(new ActivitiesId(org.getId(), activity.getId()));
+        activities.setId(new ActivitiesId(org, activity));
         activities.setActivity(activity);
         activities.setOrganization(org);
         activitiesRepository.save(activities);
@@ -155,7 +155,7 @@ public class ActivityService {
         activitiesRepository.delete(activityById.get());
         activityRepository.deleteById(id);
 
-        return new ResponseEntity<>("Successfully deleted activity!", HttpStatus.FOUND);
+        return new ResponseEntity<>("Successfully deleted activity!", HttpStatus.OK);
     }
 
     @Transactional

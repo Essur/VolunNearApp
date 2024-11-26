@@ -8,6 +8,7 @@ import lombok.*;
 @Setter
 @Entity
 @Builder
+@ToString
 @NoArgsConstructor
 @Table(name = "organizations")
 @AllArgsConstructor

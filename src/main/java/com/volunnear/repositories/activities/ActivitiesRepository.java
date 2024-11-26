@@ -20,4 +20,5 @@ public interface ActivitiesRepository extends JpaRepository<Activities, Integer>
     List<Activities> findAllByActivity_CountryAndActivity_City(String country, String city);
 
     Optional<Activities> findByOrganization_UsernameAndActivity_Id(String username, Integer id);
+    void deleteAllByOrganization_Id(Integer organizationId);
 }

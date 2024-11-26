@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ActivityRepository extends JpaRepository<Activity, Integer> {
     List<Activity> findAllActivitiesByKindOfActivity_NameIgnoreCaseIn(List<String> preferences);
+    boolean deleteAllById(Integer id);
 }

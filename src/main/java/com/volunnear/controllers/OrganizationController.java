@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,5 +42,16 @@ public class OrganizationController {
     public ActivitiesDTO getOrganizationProfile(Principal principal) {
         Organization organizationProfile = organizationService.getOrganizationProfile(principal);
         return activityService.getMyActivities(organizationProfile);
+    }
+
+    @Operation(summary = "Delete organization profile", description = "Successfully or not deleted user info")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data was successfully deleted",
+                    content = @Content(schema = @Schema(implementation = ActivitiesDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Bad credentials, try re-login")
+    })
+    @DeleteMapping(value =  Routes.DELETE_ORGANIZATION_PROFILE)
+    public ResponseEntity<String> deleteOrganizationProfile(Principal principal) {
+        return organizationService.deleteOrganizationProfile(principal);
     }
 }

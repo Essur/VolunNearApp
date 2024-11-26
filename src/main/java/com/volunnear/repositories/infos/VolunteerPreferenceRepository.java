@@ -11,5 +11,5 @@ public interface VolunteerPreferenceRepository extends JpaRepository<VolunteerPr
     List<VolunteerPreference> findAllByVolunteer_Username(String username);
 
     void deleteVolunteerPreferenceByPreference_IdAndVolunteer_Id(Integer preferenceId, Integer volunteerId);
-    Optional<VolunteerPreference> findVolunteerPreferenceByPreference_IdAndVolunteer_Id(Integer preferenceId, Integer volunteerId);
+    void deleteAllByVolunteer_Username(String username);
 }

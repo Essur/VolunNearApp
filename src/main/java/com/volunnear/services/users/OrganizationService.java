@@ -5,9 +5,13 @@ import com.volunnear.dtos.requests.UpdateOrganizationInfoRequestDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.infos.OrganizationRepository;
 import com.volunnear.repositories.users.AppUserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,7 +28,10 @@ import java.util.Set;
 public class OrganizationService {
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final ActivitiesRepository activitiesRepository;
     private final OrganizationRepository organizationRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
 
     public Organization getOrganizationProfile(Principal principal) {
         return organizationRepository.findOrganizationByUsername(principal.getName()).get();
@@ -52,18 +59,6 @@ public class OrganizationService {
         return new ResponseEntity<>("Registration successful", HttpStatus.OK);
     }
 
-    private void addAdditionalDataAboutOrganization(RegistrationOrganizationRequestDTO registrationOrganizationRequestDTO) {
-        Organization organization = Organization.builder()
-                .name(registrationOrganizationRequestDTO.getNameOfOrganization())
-                .username(registrationOrganizationRequestDTO.getUsername())
-                .email(registrationOrganizationRequestDTO.getEmail())
-                .country(registrationOrganizationRequestDTO.getCountry())
-                .city(registrationOrganizationRequestDTO.getCity())
-                .address(registrationOrganizationRequestDTO.getAddress())
-                .build();
-        organizationRepository.save(organization);
-    }
-
     public ResponseEntity<?> updateOrganizationInfo(UpdateOrganizationInfoRequestDTO updateOrganizationInfoRequestDTO, Principal principal) {
         Optional<Organization> organizationByUsername = organizationRepository.findOrganizationByUsername(principal.getName());
         if (organizationByUsername.isEmpty()) {
@@ -77,6 +72,19 @@ public class OrganizationService {
         organization.setAddress(updateOrganizationInfoRequestDTO.getAddress());
         organizationRepository.save(organization);
         return new ResponseEntity<>("Data was successfully updated", HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity<String> deleteOrganizationProfile(Principal principal) {
+        Optional<Organization> organizationByUsername = organizationRepository.findOrganizationByUsername(principal.getName());
+        if (organizationByUsername.isEmpty()) {
+            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+        } else {
+            activitiesRepository.deleteAllByOrganization_Id(organizationByUsername.get().getId());
+            organizationRepository.delete(organizationByUsername.get());
+            appUserRepository.deleteAppUserByUsername(principal.getName());
+        }
+        return new ResponseEntity<>("Data was successfully deleted", HttpStatus.OK);
     }
 
     public Optional<Organization> findOrganizationByUsername(String username) {
@@ -109,4 +117,18 @@ public class OrganizationService {
                 organization.getEmail());
     }
 
+    private void addAdditionalDataAboutOrganization(RegistrationOrganizationRequestDTO registrationOrganizationRequestDTO) {
+        Organization organization = Organization.builder()
+                .name(registrationOrganizationRequestDTO.getNameOfOrganization())
+                .username(registrationOrganizationRequestDTO.getUsername())
+                .email(registrationOrganizationRequestDTO.getEmail())
+                .country(registrationOrganizationRequestDTO.getCountry())
+                .city(registrationOrganizationRequestDTO.getCity())
+                .address(registrationOrganizationRequestDTO.getAddress())
+                .build();
+        logger.info("------------------------------------");
+        logger.info(organization.toString());
+        logger.info("------------------------------------");
+        organizationRepository.save(organization);
+    }
 }

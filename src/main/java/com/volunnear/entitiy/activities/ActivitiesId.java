@@ -1,7 +1,7 @@
 package com.volunnear.entitiy.activities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import com.volunnear.entitiy.infos.Organization;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -18,14 +19,17 @@ import java.util.Objects;
 @AllArgsConstructor
 @Embeddable
 public class ActivitiesId implements Serializable {
+    @Serial
     private static final long serialVersionUID = 3828002192702928374L;
     @NotNull
-    @Column(name = "organization_id", nullable = false)
-    private Integer organizationId;
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organizationId;
 
     @NotNull
-    @Column(name = "activity_id", nullable = false)
-    private Integer activityId;
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "activity_id", nullable = false)
+    private Activity activityId;
 
     @Override
     public boolean equals(Object o) {

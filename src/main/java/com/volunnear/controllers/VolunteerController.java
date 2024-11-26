@@ -57,4 +57,15 @@ public class VolunteerController {
     public ResponseEntity<?> deletePreferenceById(@RequestBody DeletePreferenceFromVolunteerProfileRequestDTO preferenceId, Principal principal) {
         return volunteerService.deletePreferenceById(preferenceId, principal);
     }
+
+    @Operation(summary = "Delete volunteer profile", description = "Successfully or not deleted user info")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data was successfully deleted",
+                    content = @Content(schema = @Schema(implementation = ActivitiesDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Bad credentials, try re-login")
+    })
+    @DeleteMapping(value =  Routes.DELETE_VOLUNTEER_PROFILE)
+    public ResponseEntity<String> deleteVolunteerProfile(Principal principal) {
+        return volunteerService.deleteVolunteerProfile(principal);
+    }
 }
