@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class NearbyActivitiesRequestDTO {
+public class UpdateActivityInfoRequest {
+    private String title;
+    private String description;
     private String country;
     private String city;
+    private String kindOfActivity;
 }

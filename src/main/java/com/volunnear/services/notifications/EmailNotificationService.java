@@ -5,13 +5,15 @@ import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.entitiy.infos.VolunteersSubscription;
 import com.volunnear.entitiy.infos.VolunteersSubscriptionId;
+import com.volunnear.exception.BadDataInRequestException;
+import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.DataNotFoundException;
+import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
 import com.volunnear.services.users.OrganizationService;
 import com.volunnear.services.users.VolunteerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -28,45 +30,43 @@ public class EmailNotificationService {
 
 
     @Transactional
-    public ResponseEntity<String> subscribeToNotificationByIdOfOrganization(Integer idOfOrganization, Principal principal) {
+    public void subscribeToNotificationByIdOfOrganization(Integer idOfOrganization, Principal principal) {
         Optional<Organization> organizationById = organizationService.findOrganizationById(idOfOrganization);
         if (organizationById.isEmpty()) {
-            return new ResponseEntity<>("Bad id of organization", HttpStatus.BAD_REQUEST);
+            throw new BadDataInRequestException("Organization with id " + idOfOrganization + " not found");
         }
         if (subscriptionRepository.existsByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization)) {
-            return new ResponseEntity<>("Fail, you are already subscribed", HttpStatus.BAD_REQUEST);
+            throw new UserAlreadyExistsException("Fail, you are already subscribed");
         }
         Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
         if (!volunteerService.isUserAreVolunteer(volunteerInfo.get())) {
-            return new ResponseEntity<>("You are not volunteer", HttpStatus.BAD_REQUEST);
+            throw new BadUserCredentialsException("You are not volunteer");
         }
         VolunteersSubscription subscription = new VolunteersSubscription();
         subscription.setId(new VolunteersSubscriptionId(volunteerInfo.get().getId(), organizationById.get().getId()));
         subscription.setOrganization(organizationById.get());
         subscription.setVolunteer(volunteerInfo.get());
         subscriptionRepository.save(subscription);
-        return new ResponseEntity<>("Successfully subscribed to notifications", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> unsubscribeFromNotificationOfOrganization(Integer idOfOrganization, Principal principal) {
+    public void unsubscribeFromNotificationOfOrganization(Integer idOfOrganization, Principal principal) {
         Optional<VolunteersSubscription> subscriptionById = subscriptionRepository.
                 findByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization);
         if (subscriptionById.isEmpty() || !principal.getName().equals(subscriptionById.get().getVolunteer().getUsername())) {
-            return new ResponseEntity<>("Bad id of subscription", HttpStatus.BAD_REQUEST);
+            throw new BadDataInRequestException("You are not subscribed to organization with id " + idOfOrganization);
         }
         subscriptionRepository.delete(subscriptionById.get());
-        return new ResponseEntity<>("Successfully unsubscribed from notifications", HttpStatus.OK);
     }
 
-    public ResponseEntity<?> getAllSubscriptionsOfVolunteer(Principal principal) {
+    public List<OrganizationResponseDTO> getAllSubscriptionsOfVolunteer(Principal principal) {
         List<VolunteersSubscription> allByUserVolunteerUsername = subscriptionRepository.findAllByVolunteer_Username(principal.getName());
         if (allByUserVolunteerUsername.isEmpty()) {
-            return new ResponseEntity<>("List of subscriptions is empty!", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("List of subscriptions is empty!");
         }
-        List<OrganizationResponseDTO> organizations = allByUserVolunteerUsername.stream().map(
-                subscription -> organizationService.getResponseDTOForSubscriptions(subscription.getOrganization())).collect(Collectors.toList());
 
-        return new ResponseEntity<>(organizations, HttpStatus.OK);
+        return allByUserVolunteerUsername.stream().map(
+                subscription -> organizationService
+                        .getResponseDTOForSubscriptions(subscription.getOrganization())).collect(Collectors.toList());
     }
 
 }

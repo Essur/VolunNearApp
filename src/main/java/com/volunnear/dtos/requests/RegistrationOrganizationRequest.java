@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddActivityRequestDTO {
-    private String title;
-    private String description;
+public class RegistrationOrganizationRequest {
+    private String username;
+    private String password;
+    private String email;
+    private String nameOfOrganization;
     private String country;
     private String city;
-    private String kindOfActivity;
+    private String address;
 }

@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddActivityLinkRequestDTO {
-    private Integer activityId;
-    private String link;
-    private String socialNetwork;
+public class NearbyActivitiesRequest {
+    private String country;
+    private String city;
 }

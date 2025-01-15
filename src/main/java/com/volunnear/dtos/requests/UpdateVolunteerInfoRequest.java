@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateOrganizationInfoRequestDTO {
+public class UpdateVolunteerInfoRequest {
     private String email;
-    private String nameOfOrganization;
-    private String country;
-    private String city;
-    private String address;
+    private String firstName;
+    private String lastName;
 }

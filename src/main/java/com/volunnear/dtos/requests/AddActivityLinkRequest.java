@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PreferencesRequestDTO {
-    private List<String> preferences;
+public class AddActivityLinkRequest {
+    private Integer activityId;
+    private String link;
+    private String socialNetwork;
 }

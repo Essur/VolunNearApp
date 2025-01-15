@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddCommunityLinkRequestDTO {
-    private String link;
-    private String socialNetwork;
+public class DeletePreferenceFromVolunteerProfileRequest {
+    private Integer preferenceId;
 }
