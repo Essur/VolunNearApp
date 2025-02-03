@@ -126,11 +126,11 @@ public class ActivityService {
     /**
      * All activities of current organization by organization name
      */
-    public ActivitiesDTO getAllActivitiesFromCurrentOrganization(String nameOfOrganization) {
-        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Name(nameOfOrganization);
-        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationByNameOfOrganization(nameOfOrganization);
+    public ActivitiesDTO getAllActivitiesFromCurrentOrganization(Integer id) {
+        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Id(id);
+        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationById(id);
         if (organizationByNameOfOrganization.isEmpty()) {
-            throw new DataNotFoundException("Organization with name " + nameOfOrganization + " not found");
+            throw new DataNotFoundException("Organization with id " + id + " not found");
         }
 
         return activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());

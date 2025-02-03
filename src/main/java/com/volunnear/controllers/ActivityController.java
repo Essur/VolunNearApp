@@ -59,8 +59,8 @@ public class ActivityController {
     })
     @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(value = Routes.ACTIVITY_CURRENT_ORGANIZATION)
-    public ActivitiesDTO getAllActivitiesOfCurrentOrganization(@RequestParam String nameOfOrganization) {
-        return activityService.getAllActivitiesFromCurrentOrganization(nameOfOrganization);
+    public ActivitiesDTO getAllActivitiesOfCurrentOrganization(@RequestParam Integer id) {
+        return activityService.getAllActivitiesFromCurrentOrganization(id);
     }
 
     @Operation(summary = "Get activities nearby", description = "Returns List<ActivitiesDTO>")

@@ -1,6 +1,8 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.requests.RegistrationOrganizationRequest;
+import com.volunnear.dtos.requests.UpdateOrganizationInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.infos.Organization;
@@ -13,10 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -26,6 +26,18 @@ import java.util.List;
 public class OrganizationController {
     private final ActivityService activityService;
     private final OrganizationService organizationService;
+
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PostMapping(value = Routes.REGISTER_ORGANIZATION, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Integer registrationOfOrganization(@RequestBody RegistrationOrganizationRequest registrationOrganizationRequest) {
+        return organizationService.registerOrganization(registrationOrganizationRequest);
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @PutMapping(value = Routes.UPDATE_ORGANIZATION_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public OrganizationResponseDTO updateOrganizationInfo(@RequestBody UpdateOrganizationInfoRequest updateOrganizationInfoRequest, Principal principal) {
+        return organizationService.updateOrganizationInfo(updateOrganizationInfoRequest, principal);
+    }
 
     @Operation(summary = "Get all organizations", description = "Returns List<OrganizationResponseDTO>")
     @ResponseStatus(value = HttpStatus.OK)

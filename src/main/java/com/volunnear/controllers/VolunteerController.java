@@ -3,6 +3,8 @@ package com.volunnear.controllers;
 import com.volunnear.Routes;
 import com.volunnear.dtos.requests.DeletePreferenceFromVolunteerProfileRequest;
 import com.volunnear.dtos.requests.PreferencesRequest;
+import com.volunnear.dtos.requests.RegistrationVolunteerRequest;
+import com.volunnear.dtos.requests.UpdateVolunteerInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.VolunteerProfileResponseDTO;
 import com.volunnear.services.activities.RecommendationService;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -25,6 +28,18 @@ import java.util.List;
 public class VolunteerController {
     private final VolunteerService volunteerService;
     private final RecommendationService recommendationService;
+
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PostMapping(value = Routes.REGISTER_VOLUNTEER, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Integer registrationOfVolunteer(@RequestBody RegistrationVolunteerRequest registrationVolunteerRequest) {
+        return volunteerService.registerVolunteer(registrationVolunteerRequest);
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @PutMapping(value = Routes.UPDATE_VOLUNTEER_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public VolunteerProfileResponseDTO updateVolunteerInfo(@RequestBody UpdateVolunteerInfoRequest updateVolunteerInfoRequest, Principal principal) {
+        return volunteerService.updateVolunteerInfo(updateVolunteerInfoRequest, principal);
+    }
 
     @GetMapping(value = Routes.GET_VOLUNTEER_PROFILE)
     @ResponseStatus(value = HttpStatus.OK)

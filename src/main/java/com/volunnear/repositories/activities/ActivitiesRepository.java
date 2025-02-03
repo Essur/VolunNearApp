@@ -14,6 +14,7 @@ public interface ActivitiesRepository extends JpaRepository<Activities, Integer>
     List<Activities> findAllByOrganization_Username(String username);
 
     List<Activities> findAllByOrganization_Name(String name);
+    List<Activities> findAllByOrganization_Id(Integer id);
 
     List<Activities> findAllByActivityIn(List<Activity> activities);
 

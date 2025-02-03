@@ -17,6 +17,7 @@ import com.volunnear.repositories.infos.PreferenceRepository;
 import com.volunnear.repositories.infos.VolunteerPreferenceRepository;
 import com.volunnear.repositories.infos.VolunteerRepository;
 import com.volunnear.repositories.users.AppUserRepository;
+import com.volunnear.repositories.users.RefreshTokenRepository;
 import com.volunnear.services.activities.ActivityService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class VolunteerService {
     private final AppUserRepository appUserRepository;
     private final VolunteerRepository volunteerRepository;
     private final PreferenceRepository preferenceRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final VolunteerPreferenceRepository volunteerPreferenceRepository;
     private final Logger logger = LoggerFactory.getLogger(VolunteerService.class);
 
@@ -157,6 +159,7 @@ public class VolunteerService {
     public void deleteVolunteerProfile(Principal principal) {
         Optional<Volunteer> volunteer = volunteerRepository.findByUsername(principal.getName());
         if (volunteer.isPresent()) {
+            refreshTokenRepository.deleteByAppUser_Username(principal.getName());
             volunteerPreferenceRepository.deleteAllByVolunteer_Username(volunteer.get().getUsername());
             volunteerRepository.delete(volunteer.get());
             appUserRepository.deleteAppUserByUsername(principal.getName());

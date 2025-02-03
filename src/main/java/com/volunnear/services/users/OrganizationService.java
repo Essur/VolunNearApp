@@ -10,6 +10,7 @@ import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.infos.OrganizationRepository;
 import com.volunnear.repositories.users.AppUserRepository;
+import com.volunnear.repositories.users.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ public class OrganizationService {
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ActivitiesRepository activitiesRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final OrganizationRepository organizationRepository;
 
     private final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
@@ -80,6 +82,7 @@ public class OrganizationService {
         if (organizationByUsername.isEmpty()) {
             throw new BadUserCredentialsException("Bad credentials, try re-login");
         } else {
+            refreshTokenRepository.deleteByAppUser_Username(principal.getName());
             activitiesRepository.deleteAllByOrganization_Id(organizationByUsername.get().getId());
             organizationRepository.delete(organizationByUsername.get());
             appUserRepository.deleteAppUserByUsername(principal.getName());

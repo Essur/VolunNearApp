@@ -1,7 +1,6 @@
 package com.volunnear.services.security;
 
 import com.volunnear.dtos.jwt.JwtRequest;
-import com.volunnear.dtos.jwt.JwtResponse;
 import com.volunnear.exception.AuthErrorException;
 import com.volunnear.security.jwt.JwtTokenProvider;
 import com.volunnear.services.users.UserService;
@@ -19,14 +18,26 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
-    public JwtResponse createAuthToken(JwtRequest authRequest) {
+    public String createAuthToken(JwtRequest authRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         } catch (BadCredentialsException e) {
             throw new AuthErrorException("Incorrect login or password");
         }
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
-        String token = jwtTokenProvider.createToken(userDetails);
-        return new JwtResponse(token, userDetails.getAuthorities().toString());
+        return jwtTokenProvider.createToken(userDetails);
+    }
+
+    public String recreateToken(String username){
+        UserDetails userDetails = userService.loadUserByUsername(username);
+        return jwtTokenProvider.createToken(userDetails);
+    }
+
+    public String getAuthorities(String token) {
+        return jwtTokenProvider.getRolesFromToken(token).getFirst();
+    }
+
+    public String getUsernameByToken(String token) {
+        return jwtTokenProvider.getUsernameFromToken(token);
     }
 }

@@ -8,6 +8,7 @@ public class Routes {
      * Users management
      */
     public static final String LOGIN = API_URL + "/login";
+    public static final String REFRESH_TOKEN = API_URL + "/refresh_token";
     public static final String REGISTER_ROUTE_SECURITY = API_URL + "/registration";
     public static final String REGISTER_VOLUNTEER = API_URL + "/registration/volunteer";
     public static final String REGISTER_ORGANIZATION = API_URL + "/registration/organization";
