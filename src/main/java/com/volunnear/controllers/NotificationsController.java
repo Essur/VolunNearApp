@@ -10,10 +10,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,18 +27,21 @@ public class NotificationsController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrganizationResponseDTO.class)))),
             @ApiResponse(responseCode = "400", description = "List of subscriptions is empty!")
     })
+    @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(Routes.GET_ALL_SUBSCRIPTIONS_OF_VOLUNTEER)
-    public ResponseEntity<?> getAllSubscriptionsOfVolunteer(Principal principal) {
+    public List<OrganizationResponseDTO> getAllSubscriptionsOfVolunteer(Principal principal) {
         return emailNotificationService.getAllSubscriptionsOfVolunteer(principal);
     }
 
+    @ResponseStatus(value = HttpStatus.OK)
     @PostMapping(Routes.SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
-    public ResponseEntity<String> subscribeToNotificationsByIdOfOrganization(@RequestParam Integer idOfOrganization, Principal principal) {
-        return emailNotificationService.subscribeToNotificationByIdOfOrganization(idOfOrganization, principal);
+    public void subscribeToNotificationsByIdOfOrganization(@RequestParam Integer idOfOrganization, Principal principal) {
+        emailNotificationService.subscribeToNotificationByIdOfOrganization(idOfOrganization, principal);
     }
 
+    @ResponseStatus(value = HttpStatus.OK)
     @DeleteMapping(Routes.UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
-    public ResponseEntity<String> unsubscribeFromNotificationsByIdOfOrganizations(@RequestParam Integer idOfOrganization, Principal principal) {
-        return emailNotificationService.unsubscribeFromNotificationOfOrganization(idOfOrganization, principal);
+    public void unsubscribeFromNotificationsByIdOfOrganizations(@RequestParam Integer idOfOrganization, Principal principal) {
+        emailNotificationService.unsubscribeFromNotificationOfOrganization(idOfOrganization, principal);
     }
 }

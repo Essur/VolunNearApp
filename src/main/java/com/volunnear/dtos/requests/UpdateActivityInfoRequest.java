@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddActivityRequestDTO {
+public class UpdateActivityInfoRequest {
     private String title;
     private String description;
     private String country;

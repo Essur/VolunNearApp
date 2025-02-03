@@ -1,8 +1,9 @@
 package com.volunnear.services.activities;
 
 import com.volunnear.dtos.ActivityNotificationDTO;
-import com.volunnear.dtos.requests.AddActivityRequestDTO;
-import com.volunnear.dtos.requests.NearbyActivitiesRequestDTO;
+import com.volunnear.dtos.requests.AddActivityRequest;
+import com.volunnear.dtos.requests.NearbyActivitiesRequest;
+import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.ActivityDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
@@ -11,6 +12,8 @@ import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.infos.Preference;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.events.ActivityCreationEvent;
+import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.activities.ActivityRepository;
 import com.volunnear.repositories.activities.VolunteersInActivityRepository;
@@ -23,8 +26,6 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -54,10 +55,10 @@ public class ActivityService {
     }
 
     @Transactional
-    public ResponseEntity<?> addActivityToOrganization(AddActivityRequestDTO activityRequest, Principal principal) {
+    public Integer addActivityToOrganization(AddActivityRequest activityRequest, Principal principal) {
         Optional<Organization> organization = organizationService.findOrganizationByUsername(principal.getName());
         if (organization.isEmpty()) {
-            return new ResponseEntity<>("Bad username!", HttpStatus.OK);
+            throw new BadUserCredentialsException("User with username " + principal.getName() + " was not found");
         }
         if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())) {
             Preference newPreference = new Preference();
@@ -83,7 +84,7 @@ public class ActivityService {
         activitiesRepository.save(activities);
         sendNotificationForSubscribers(activity, "New");
 
-        return new ResponseEntity<>("Activity added", HttpStatus.OK);
+        return activity.getId();
     }
 
     @Async
@@ -108,7 +109,9 @@ public class ActivityService {
 
     public List<ActivitiesDTO> getAllActivitiesOfAllOrganizations() {
         List<Activities> allActivities = activitiesRepository.findAll();
-
+        if (allActivities.isEmpty()) {
+            throw new DataNotFoundException("Activities list is empty");
+        }
         return getListOfActivitiesDTOForResponse(allActivities);
     }
 
@@ -123,15 +126,14 @@ public class ActivityService {
     /**
      * All activities of current organization by organization name
      */
-    public ResponseEntity<?> getAllActivitiesFromCurrentOrganization(String nameOfOrganization) {
-        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Name(nameOfOrganization);
-        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationByNameOfOrganization(nameOfOrganization);
+    public ActivitiesDTO getAllActivitiesFromCurrentOrganization(Integer id) {
+        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Id(id);
+        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationById(id);
         if (organizationByNameOfOrganization.isEmpty()) {
-            return new ResponseEntity<>("Organization with name " + nameOfOrganization + " not found", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("Organization with id " + id + " not found");
         }
-        ActivitiesDTO activitiesDTO = activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());
 
-        return new ResponseEntity<>(activitiesDTO, HttpStatus.OK);
+        return activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());
     }
 
     public List<ActivitiesDTO> getActivitiesOfOrganizationByPreferences(List<String> preferences) {
@@ -146,43 +148,43 @@ public class ActivityService {
      */
     @SneakyThrows
     @Transactional
-    public ResponseEntity<?> deleteActivityById(Integer id, Principal principal) {
+    public void deleteActivityById(Integer id, Principal principal) {
         Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(id);
 
         if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
-            return new ResponseEntity<>("Bad id", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("Activity with id " + id + " not found");
         }
         activitiesRepository.delete(activityById.get());
         activityRepository.deleteById(id);
-
-        return new ResponseEntity<>("Successfully deleted activity!", HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity<?> addVolunteerToActivity(Principal principal, Integer idOfActivity) {
+    public String addVolunteerToActivity(Principal principal, Integer idOfActivity) {
         Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
         if (volunteerInfo.isEmpty()) {
-            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
         }
         Optional<Activity> activityById = activityRepository.findById(idOfActivity);
 
         if (activityById.isEmpty()) {
-            return new ResponseEntity<>("No such activity in our database", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("No such activity in our database");
         }
 
         VolunteersInActivity volunteerInActivity = new VolunteersInActivity();
+
         volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(), volunteerInfo.get().getId()));
         volunteerInActivity.setActivity(activityById.get());
         volunteerInActivity.setVolunteer(volunteerInfo.get());
         volunteerInActivity.setDateOfEntry(Instant.now());
         volunteersInActivityRepository.save(volunteerInActivity);
-        return new ResponseEntity<>("Successful! Welcome to activity: " + activityById.get().getTitle(), HttpStatus.OK);
+
+        return volunteerInActivity.getActivity().getTitle();
     }
 
-    public ResponseEntity<?> updateActivityInformation(Integer idOfActivity, AddActivityRequestDTO activityRequest, Principal principal) {
+    public ActivityDTO updateActivityInformation(Integer idOfActivity, UpdateActivityInfoRequest activityRequest, Principal principal) {
         Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(idOfActivity);
         if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
-            return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("Activity with id " + idOfActivity + " was not found");
         }
 
         Activity activity = activityById.get().getActivity();
@@ -200,16 +202,15 @@ public class ActivityService {
         activityRepository.save(activity);
         sendNotificationForSubscribers(activity, "Updated");
 
-        return new ResponseEntity<>("Successfully updated id " + idOfActivity, HttpStatus.OK);
+        return activityToDTO(activity);
     }
 
     @Transactional
-    public ResponseEntity<?> deleteVolunteerFromActivity(Integer id, Principal principal) {
+    public void deleteVolunteerFromActivity(Integer id, Principal principal) {
         if (!volunteersInActivityRepository.existsByActivity_IdAndVolunteer_Username(id, principal.getName())) {
-            return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
+            throw new DataNotFoundException("Activity with id " + id + " was not found");
         }
         volunteersInActivityRepository.deleteByActivity_IdAndVolunteer_Username(id, principal.getName());
-        return new ResponseEntity<>("Successfully leaved from activity!", HttpStatus.OK);
     }
 
     public List<ActivitiesDTO> getActivitiesOfVolunteer(Principal principal) {
@@ -223,13 +224,15 @@ public class ActivityService {
         return getListOfActivitiesDTOForResponse(activitiesWithOrg);
     }
 
-    public ResponseEntity<?> findNearbyActivities(NearbyActivitiesRequestDTO nearbyActivitiesRequestDTO) {
+    public List<ActivitiesDTO> findNearbyActivities(NearbyActivitiesRequest nearbyActivitiesRequest) {
         List<ActivitiesDTO> activitiesByPlace = getListOfActivitiesDTOForResponse(
-                activitiesRepository.findAllByActivity_CountryAndActivity_City(nearbyActivitiesRequestDTO.getCountry(), nearbyActivitiesRequestDTO.getCity()));
+                activitiesRepository.findAllByActivity_CountryAndActivity_City(nearbyActivitiesRequest.getCountry(), nearbyActivitiesRequest.getCity()));
         if (activitiesByPlace.isEmpty()) {
-            return new ResponseEntity<>("No such activities in current place", HttpStatus.OK);
+            throw new DataNotFoundException("No such activities in "
+                                            + nearbyActivitiesRequest.getCountry() + " "
+                                            + nearbyActivitiesRequest.getCity());
         }
-        return new ResponseEntity<>(activitiesByPlace, HttpStatus.OK);
+        return activitiesByPlace;
     }
 
     public Optional<Activities> findActivityByOrganizationAndIdOfActivity(Principal principal, Integer idOfActivity) {

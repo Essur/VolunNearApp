@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeletePreferenceFromVolunteerProfileRequestDTO {
-    private Integer preferenceId;
+public class PreferencesRequest {
+    private List<String> preferences;
 }

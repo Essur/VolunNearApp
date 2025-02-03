@@ -1,4 +1,4 @@
-package com.volunnear.dtos.jwt;
+package com.volunnear.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class JwtRequest {
-    private String username;
-    private String password;
+public class AppError {
+    private int statusCode;
+    private String message;
 }

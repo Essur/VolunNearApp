@@ -1,19 +1,20 @@
 package com.volunnear.services.users;
 
-import com.volunnear.dtos.requests.RegistrationOrganizationRequestDTO;
-import com.volunnear.dtos.requests.UpdateOrganizationInfoRequestDTO;
+import com.volunnear.dtos.requests.RegistrationOrganizationRequest;
+import com.volunnear.dtos.requests.UpdateOrganizationInfoRequest;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.infos.OrganizationRepository;
 import com.volunnear.repositories.users.AppUserRepository;
+import com.volunnear.repositories.users.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class OrganizationService {
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ActivitiesRepository activitiesRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final OrganizationRepository organizationRepository;
 
     private final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
@@ -46,45 +48,45 @@ public class OrganizationService {
         return organizationResponseDTO;
     }
 
-    public ResponseEntity<?> registerOrganization(RegistrationOrganizationRequestDTO registrationOrganizationRequestDTO) {
-        if (appUserRepository.existsByUsername(registrationOrganizationRequestDTO.getUsername())) {
-            return new ResponseEntity<>("User with username " + registrationOrganizationRequestDTO.getUsername() + " already exists", HttpStatus.CONFLICT);
+    public Integer registerOrganization(RegistrationOrganizationRequest registrationOrganizationRequest) {
+        if (appUserRepository.existsByUsername(registrationOrganizationRequest.getUsername())) {
+            throw new UserAlreadyExistsException("User with username " + registrationOrganizationRequest.getUsername() + " already exists");
         }
         AppUser organization = new AppUser();
-        organization.setUsername(registrationOrganizationRequestDTO.getUsername());
-        organization.setPassword(passwordEncoder.encode(registrationOrganizationRequestDTO.getPassword()));
+        organization.setUsername(registrationOrganizationRequest.getUsername());
+        organization.setPassword(passwordEncoder.encode(registrationOrganizationRequest.getPassword()));
         organization.setRoles(Set.of("ORGANIZATION"));
         appUserRepository.save(organization);
-        addAdditionalDataAboutOrganization(registrationOrganizationRequestDTO);
-        return new ResponseEntity<>("Registration successful", HttpStatus.OK);
+        addAdditionalDataAboutOrganization(registrationOrganizationRequest);
+        return organization.getId();
     }
 
-    public ResponseEntity<?> updateOrganizationInfo(UpdateOrganizationInfoRequestDTO updateOrganizationInfoRequestDTO, Principal principal) {
+    public OrganizationResponseDTO updateOrganizationInfo(UpdateOrganizationInfoRequest updateOrganizationInfoRequest, Principal principal) {
         Optional<Organization> organizationByUsername = organizationRepository.findOrganizationByUsername(principal.getName());
         if (organizationByUsername.isEmpty()) {
-            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
         }
         Organization organization = organizationByUsername.get();
-        organization.setEmail(updateOrganizationInfoRequestDTO.getEmail());
-        organization.setName(updateOrganizationInfoRequestDTO.getNameOfOrganization());
-        organization.setCountry(updateOrganizationInfoRequestDTO.getCountry());
-        organization.setCity(updateOrganizationInfoRequestDTO.getCity());
-        organization.setAddress(updateOrganizationInfoRequestDTO.getAddress());
+        organization.setEmail(updateOrganizationInfoRequest.getEmail());
+        organization.setName(updateOrganizationInfoRequest.getNameOfOrganization());
+        organization.setCountry(updateOrganizationInfoRequest.getCountry());
+        organization.setCity(updateOrganizationInfoRequest.getCity());
+        organization.setAddress(updateOrganizationInfoRequest.getAddress());
         organizationRepository.save(organization);
-        return new ResponseEntity<>("Data was successfully updated", HttpStatus.OK);
+        return getOrganizationResponseDTO(organization);
     }
 
     @Transactional
-    public ResponseEntity<String> deleteOrganizationProfile(Principal principal) {
+    public void deleteOrganizationProfile(Principal principal) {
         Optional<Organization> organizationByUsername = organizationRepository.findOrganizationByUsername(principal.getName());
         if (organizationByUsername.isEmpty()) {
-            return new ResponseEntity<>("Bad credentials, try re-login", HttpStatus.BAD_REQUEST);
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
         } else {
+            refreshTokenRepository.deleteByAppUser_Username(principal.getName());
             activitiesRepository.deleteAllByOrganization_Id(organizationByUsername.get().getId());
             organizationRepository.delete(organizationByUsername.get());
             appUserRepository.deleteAppUserByUsername(principal.getName());
         }
-        return new ResponseEntity<>("Data was successfully deleted", HttpStatus.OK);
     }
 
     public Optional<Organization> findOrganizationByUsername(String username) {
@@ -117,14 +119,14 @@ public class OrganizationService {
                 organization.getEmail());
     }
 
-    private void addAdditionalDataAboutOrganization(RegistrationOrganizationRequestDTO registrationOrganizationRequestDTO) {
+    private void addAdditionalDataAboutOrganization(RegistrationOrganizationRequest registrationOrganizationRequest) {
         Organization organization = Organization.builder()
-                .name(registrationOrganizationRequestDTO.getNameOfOrganization())
-                .username(registrationOrganizationRequestDTO.getUsername())
-                .email(registrationOrganizationRequestDTO.getEmail())
-                .country(registrationOrganizationRequestDTO.getCountry())
-                .city(registrationOrganizationRequestDTO.getCity())
-                .address(registrationOrganizationRequestDTO.getAddress())
+                .name(registrationOrganizationRequest.getNameOfOrganization())
+                .username(registrationOrganizationRequest.getUsername())
+                .email(registrationOrganizationRequest.getEmail())
+                .country(registrationOrganizationRequest.getCountry())
+                .city(registrationOrganizationRequest.getCity())
+                .address(registrationOrganizationRequest.getAddress())
                 .build();
         logger.info("------------------------------------");
         logger.info(organization.toString());

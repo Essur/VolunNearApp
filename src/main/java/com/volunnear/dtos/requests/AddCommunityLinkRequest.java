@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddCommunityLinkRequestDTO {
+public class AddCommunityLinkRequest {
     private String link;
     private String socialNetwork;
 }

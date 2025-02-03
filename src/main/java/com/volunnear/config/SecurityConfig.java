@@ -26,10 +26,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(Routes.REGISTER_ROUTE_SECURITY + "/**",
-                                Routes.LOGIN).permitAll()
-
+                                Routes.LOGIN,
+                                Routes.GET_ALL_ORGANIZATIONS,
+                                Routes.ACTIVITY_CURRENT_ORGANIZATION,
+                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
+                                Routes.GET_CHAT_LINK_BY_ACTIVITY,
+                                Routes.GET_COMMUNITY_LINK_BY_ORGANIZATION).permitAll()
                         .requestMatchers(Routes.SWAGGER_ENDPOINTS).permitAll()
                         .requestMatchers("/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                        .requestMatchers(Routes.REFRESH_TOKEN).hasAnyRole("VOLUNTEER", "ORGANIZATION")
 
                         .requestMatchers(Routes.VOLUNTEER + "/**",
                                 Routes.UPDATE_VOLUNTEER_PROFILE,
@@ -47,16 +54,6 @@ public class SecurityConfig {
                                 Routes.GET_ORGANIZATION_PROFILE,
                                 Routes.ADD_COMMUNITY_LINK,
                                 Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANIZATION")
-
-                        .requestMatchers("/api/hello",
-                                Routes.GET_ALL_ORGANIZATIONS,
-                                Routes.ACTIVITY_CURRENT_ORGANIZATION,
-                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
-                                Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
-                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
-                                Routes.GET_CHAT_LINK_BY_ACTIVITY,
-                                Routes.GET_COMMUNITY_LINK_BY_ORGANIZATION)
-                        .hasAnyRole("VOLUNTEER", "ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());
