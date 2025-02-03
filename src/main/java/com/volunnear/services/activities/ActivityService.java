@@ -1,65 +1,90 @@
 package com.volunnear.services.activities;
 
 import com.volunnear.dtos.ActivityNotificationDTO;
-import com.volunnear.dtos.requests.AddActivityRequestDTO;
-import com.volunnear.dtos.requests.NearbyActivitiesRequestDTO;
+import com.volunnear.dtos.requests.AddActivityRequest;
+import com.volunnear.dtos.requests.NearbyActivitiesRequest;
+import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
-import com.volunnear.entitiy.activities.Activity;
-import com.volunnear.entitiy.activities.VolunteerInActivity;
-import com.volunnear.entitiy.infos.OrganisationInfo;
-import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
+import com.volunnear.entitiy.activities.*;
+import com.volunnear.entitiy.infos.Organization;
+import com.volunnear.entitiy.infos.Preference;
+import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.events.ActivityCreationEvent;
-import com.volunnear.exceptions.AuthErrorException;
-import com.volunnear.repositories.infos.ActivitiesRepository;
-import com.volunnear.repositories.infos.VolunteersInActivityRepository;
-import com.volunnear.services.users.OrganisationService;
-import com.volunnear.services.users.UserService;
+import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.DataNotFoundException;
+import com.volunnear.repositories.activities.ActivitiesRepository;
+import com.volunnear.repositories.activities.ActivityRepository;
+import com.volunnear.repositories.activities.VolunteersInActivityRepository;
+import com.volunnear.repositories.infos.PreferenceRepository;
+import com.volunnear.services.users.OrganizationService;
+import com.volunnear.services.users.VolunteerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ActivityService {
-    private final UserService userService;
-    private final OrganisationService organisationService;
+    private VolunteerService volunteerService;
+    private final ActivityRepository activityRepository;
+    private final OrganizationService organizationService;
     private final ApplicationEventPublisher eventPublisher;
     private final ActivitiesRepository activitiesRepository;
+    private final PreferenceRepository preferenceRepository;
     private final VolunteersInActivityRepository volunteersInActivityRepository;
 
-    public ResponseEntity<?> addActivityToOrganisation(AddActivityRequestDTO activityRequest, Principal principal) {
-        Optional<AppUser> organisation = userService.findAppUserByUsername(principal.getName());
-        if (organisation.isEmpty()) {
-            return new ResponseEntity<>(new AuthErrorException(HttpStatus.UNAUTHORIZED.value(), "Incorrect token data about organisation"), HttpStatus.UNAUTHORIZED);
-        }
-        if (!organisationService.isUserAreOrganisation(organisation.get())) {
-            return new ResponseEntity<>("Bad try, you are not organisation", HttpStatus.BAD_REQUEST);
-        }
-        Activity activity = new Activity();
+    @Lazy
+    @Autowired
+    public void setVolunteerService(VolunteerService volunteerService) {
+        this.volunteerService = volunteerService;
+    }
 
-        activity.setTitle(activityRequest.getTitle());
-        activity.setDescription(activityRequest.getDescription());
-        activity.setCountry(activityRequest.getCountry());
-        activity.setCity(activityRequest.getCity());
-        activity.setDateOfPlace(new Date());
-        activity.setKindOfActivity(activityRequest.getKindOfActivity());
-        activity.setAppUser(organisation.get());
-        activitiesRepository.save(activity);
+    @Transactional
+    public Integer addActivityToOrganization(AddActivityRequest activityRequest, Principal principal) {
+        Optional<Organization> organization = organizationService.findOrganizationByUsername(principal.getName());
+        if (organization.isEmpty()) {
+            throw new BadUserCredentialsException("User with username " + principal.getName() + " was not found");
+        }
+        if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())) {
+            Preference newPreference = new Preference();
+            newPreference.setName(activityRequest.getKindOfActivity());
+            preferenceRepository.save(newPreference);
+        }
+        Preference preference = preferenceRepository.findPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity()).get();
+        Activity activity = Activity.builder()
+                .title(activityRequest.getTitle())
+                .description(activityRequest.getDescription())
+                .country(activityRequest.getCountry())
+                .city(activityRequest.getCity())
+                .kindOfActivity(preference)
+                .dateOfPlace(Instant.now()).build();
+        activityRepository.save(activity);
 
+        Organization org = organization.get();
+
+        Activities activities = new Activities();
+        activities.setId(new ActivitiesId(org, activity));
+        activities.setActivity(activity);
+        activities.setOrganization(org);
+        activitiesRepository.save(activities);
         sendNotificationForSubscribers(activity, "New");
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return activity.getId();
     }
 
     @Async
@@ -67,190 +92,216 @@ public class ActivityService {
         ActivityNotificationDTO notificationDTO = new ActivityNotificationDTO();
         ActivityDTO activityDTO = new ActivityDTO();
 
+        activityDTO.setId(activity.getId());
         activityDTO.setCity(activity.getCity());
         activityDTO.setCountry(activity.getCountry());
-        activityDTO.setKindOfActivity(activity.getKindOfActivity());
+        activityDTO.setKindOfActivity(activity.getKindOfActivity().getName());
         activityDTO.setTitle(activity.getTitle());
         activityDTO.setDescription(activity.getDescription());
         activityDTO.setDateOfPlace(activity.getDateOfPlace());
 
+        OrganizationResponseDTO organizationResponseDTO = getOrganizationResponseDTO(
+                activitiesRepository.findActivitiesByActivityId(activity.getId()).get().getOrganization());
         notificationDTO.setActivityDTO(activityDTO);
-        notificationDTO.setOrganisationResponseDTO(getOrganisationResponseDTO(organisationService.findAdditionalInfoAboutOrganisation(activity.getAppUser())));
+        notificationDTO.setOrganizationResponseDTO(organizationResponseDTO);
         eventPublisher.publishEvent(new ActivityCreationEvent(this, notificationDTO, status));
     }
 
-    public List<ActivitiesDTO> getAllActivitiesOfAllOrganisations() {
-        List<Activity> allActivities = activitiesRepository.findAll();
-
+    public List<ActivitiesDTO> getAllActivitiesOfAllOrganizations() {
+        List<Activities> allActivities = activitiesRepository.findAll();
+        if (allActivities.isEmpty()) {
+            throw new DataNotFoundException("Activities list is empty");
+        }
         return getListOfActivitiesDTOForResponse(allActivities);
     }
 
     /**
-     * Activities by organisation username from token
+     * Activities by organization username from token
      */
-    public ActivitiesDTO getMyActivities(Principal principal) {
-        String username = principal.getName();
-        Optional<AppUser> appUserByUsername = userService.findAppUserByUsername(username);
-        OrganisationInfo additionalInfoAboutOrganisation = organisationService.findAdditionalInfoAboutOrganisation(appUserByUsername.get());
-        List<Activity> activitiesByAppUser = activitiesRepository.findActivitiesByAppUser(appUserByUsername.get());
-
-        return activitiesFromEntityToDto(additionalInfoAboutOrganisation, activitiesByAppUser);
+    public ActivitiesDTO getMyActivities(Organization organization) {
+        List<Activities> allByOrganizationUsername = activitiesRepository.findAllByOrganization_Username(organization.getUsername());
+        return activitiesFromEntityToDto(allByOrganizationUsername, organization);
     }
 
     /**
-     * All activities of current organisation by organisation name
+     * All activities of current organization by organization name
      */
-    public ResponseEntity<?> getAllActivitiesFromCurrentOrganisation(String nameOfOrganisation) {
-        Optional<OrganisationInfo> organisationByNameOfOrganisation = organisationService.findOrganisationByNameOfOrganisation(nameOfOrganisation);
-        if (organisationByNameOfOrganisation.isEmpty()) {
-            return new ResponseEntity<>("Organisation with name " + nameOfOrganisation + " not found", HttpStatus.BAD_REQUEST);
+    public ActivitiesDTO getAllActivitiesFromCurrentOrganization(Integer id) {
+        List<Activities> allByOrganizationName = activitiesRepository.findAllByOrganization_Id(id);
+        Optional<Organization> organizationByNameOfOrganization = organizationService.findOrganizationById(id);
+        if (organizationByNameOfOrganization.isEmpty()) {
+            throw new DataNotFoundException("Organization with id " + id + " not found");
         }
-        OrganisationInfo organisationInfo = organisationByNameOfOrganisation.get();
 
-        List<Activity> activitiesByAppUser = activitiesRepository.findActivitiesByAppUser(organisationInfo.getAppUser());
-        ActivitiesDTO activitiesDTO = activitiesFromEntityToDto(organisationInfo, activitiesByAppUser);
-
-        return new ResponseEntity<>(activitiesDTO, HttpStatus.OK);
+        return activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());
     }
 
-    public List<ActivitiesDTO> getOrganisationsWithActivitiesByPreferences(List<String> preferences) {
-        List<Activity> activityByKindOfActivity = activitiesRepository.findActivityByKindOfActivityIgnoreCaseIn(preferences);
-        return getListOfActivitiesDTOForResponse(activityByKindOfActivity);
+    public List<ActivitiesDTO> getActivitiesOfOrganizationByPreferences(List<String> preferences) {
+        List<Activity> activitiesByKindOfActivity = activityRepository.findAllActivitiesByKindOfActivity_NameIgnoreCaseIn(preferences);
+        List<Activities> allByActivityContains = activitiesRepository.findAllByActivityIn(activitiesByKindOfActivity);
+        return getListOfActivitiesDTOForResponse(allByActivityContains);
     }
 
 
     /**
-     * Delete activity by id and from org principal (organisation data)
+     * Delete activity by id and from org principal (organization data)
      */
     @SneakyThrows
-    public ResponseEntity<?> deleteActivityById(Long id, Principal principal) {
-        AppUser appUser = organisationService.findOrganisationByUsername(principal.getName()).get();
-        Optional<Activity> activityById = activitiesRepository.findById(id);
+    @Transactional
+    public void deleteActivityById(Integer id, Principal principal) {
+        Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(id);
 
-        if (activityById.isEmpty() || !appUser.equals(activityById.get().getAppUser())) {
-            return new ResponseEntity<>("Bad id", HttpStatus.BAD_REQUEST);
+        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
+            throw new DataNotFoundException("Activity with id " + id + " not found");
         }
-
-        activitiesRepository.deleteById(id);
-
-        return new ResponseEntity<>("Successfully deleted activity!", HttpStatus.FOUND);
-    }
-
-    public ResponseEntity<?> addVolunteerToActivity(Principal principal, Long idOfActivity) {
-        AppUser appUser = userService.findAppUserByUsername(principal.getName()).get();
-        List<VolunteerInActivity> allByUser = volunteersInActivityRepository.findAllByUser(appUser);
-
-//        if (allByUser.size() > 5) {
-//            return new ResponseEntity<>("To much activities in yours profile!", HttpStatus.OK);
-//        }
-
-        Optional<Activity> activityById = activitiesRepository.findById(idOfActivity);
-
-        if (activityById.isEmpty()) {
-            return new ResponseEntity<>("No such activity in our database", HttpStatus.BAD_REQUEST);
-        }
-
-        VolunteerInActivity volunteerInActivity = new VolunteerInActivity();
-        volunteerInActivity.setUser(appUser);
-        volunteerInActivity.setActivity(activityById.get());
-        volunteersInActivityRepository.save(volunteerInActivity);
-        return new ResponseEntity<>("Successful! Welcome to activity: " + activityById.get().getTitle(), HttpStatus.OK);
-    }
-
-    public ResponseEntity<?> updateActivityInformation(Long idOfActivity, AddActivityRequestDTO activityRequestDTO, Principal principal) {
-        AppUser appUser = userService.findAppUserByUsername(principal.getName()).get();
-        Optional<Activity> activityById = activitiesRepository.findById(idOfActivity);
-        if (activityById.isEmpty() || !appUser.equals(activityById.get().getAppUser())) {
-            return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
-        }
-
-        Activity activity = activityById.get();
-
-        activity.setTitle(activityRequestDTO.getTitle());
-        activity.setTitle(activityRequestDTO.getTitle());
-        activity.setDescription(activityRequestDTO.getDescription());
-        activity.setCountry(activityRequestDTO.getCountry());
-        activity.setCity(activityRequestDTO.getCity());
-        activity.setDateOfPlace(new Date());
-        activity.setKindOfActivity(activityRequestDTO.getKindOfActivity());
-
-        sendNotificationForSubscribers(activity, "Updated");
-
-        return new ResponseEntity<>("Successfully updated id", HttpStatus.OK);
+        activitiesRepository.delete(activityById.get());
+        activityRepository.deleteById(id);
     }
 
     @Transactional
-    public ResponseEntity<?> deleteVolunteerFromActivity(Long id, Principal principal) {
-        AppUser appUser = userService.findAppUserByUsername(principal.getName()).get();
-        if (!volunteersInActivityRepository.existsByUserAndActivity_Id(appUser, id)) {
-            return new ResponseEntity<>("Bad id of activity!", HttpStatus.BAD_REQUEST);
+    public String addVolunteerToActivity(Principal principal, Integer idOfActivity) {
+        Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
+        if (volunteerInfo.isEmpty()) {
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
         }
-        volunteersInActivityRepository.deleteByActivity_IdAndUser_Id(id, appUser.getId());
-        return new ResponseEntity<>("Successfully leaved from activity!", HttpStatus.OK);
+        Optional<Activity> activityById = activityRepository.findById(idOfActivity);
+
+        if (activityById.isEmpty()) {
+            throw new DataNotFoundException("No such activity in our database");
+        }
+
+        VolunteersInActivity volunteerInActivity = new VolunteersInActivity();
+
+        volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(), volunteerInfo.get().getId()));
+        volunteerInActivity.setActivity(activityById.get());
+        volunteerInActivity.setVolunteer(volunteerInfo.get());
+        volunteerInActivity.setDateOfEntry(Instant.now());
+        volunteersInActivityRepository.save(volunteerInActivity);
+
+        return volunteerInActivity.getActivity().getTitle();
     }
 
-    public List<ActivitiesDTO> getActivitiesOfVolunteer(AppUser appUser) {
-        List<VolunteerInActivity> allByUser = volunteersInActivityRepository.findAllByUser(appUser);
-        List<Activity> infoAboutActivities = allByUser.stream().map(volunteerInActivity ->
-                activitiesRepository.findById(volunteerInActivity.getActivity().getId()).get()).toList();
-        return getListOfActivitiesDTOForResponse(infoAboutActivities);
+    public ActivityDTO updateActivityInformation(Integer idOfActivity, UpdateActivityInfoRequest activityRequest, Principal principal) {
+        Optional<Activities> activityById = activitiesRepository.findActivitiesByActivityId(idOfActivity);
+        if (activityById.isEmpty() || !principal.getName().equals(activityById.get().getOrganization().getUsername())) {
+            throw new DataNotFoundException("Activity with id " + idOfActivity + " was not found");
+        }
+
+        Activity activity = activityById.get().getActivity();
+        Preference preference = preferenceRepository.findPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())
+                .orElseGet(() -> preferenceRepository.save(Preference.builder()
+                        .name(activityRequest.getKindOfActivity())
+                        .build()));
+
+        activity.setTitle(activityRequest.getTitle());
+        activity.setDescription(activityRequest.getDescription());
+        activity.setCountry(activityRequest.getCountry());
+        activity.setCity(activityRequest.getCity());
+        activity.setDateOfPlace(Instant.now());
+        activity.setKindOfActivity(preference);
+        activityRepository.save(activity);
+        sendNotificationForSubscribers(activity, "Updated");
+
+        return activityToDTO(activity);
     }
 
-    public ResponseEntity<?> findNearbyActivities(NearbyActivitiesRequestDTO nearbyActivitiesRequestDTO) {
+    @Transactional
+    public void deleteVolunteerFromActivity(Integer id, Principal principal) {
+        if (!volunteersInActivityRepository.existsByActivity_IdAndVolunteer_Username(id, principal.getName())) {
+            throw new DataNotFoundException("Activity with id " + id + " was not found");
+        }
+        volunteersInActivityRepository.deleteByActivity_IdAndVolunteer_Username(id, principal.getName());
+    }
+
+    public List<ActivitiesDTO> getActivitiesOfVolunteer(Principal principal) {
+        List<VolunteersInActivity> allByUser = volunteersInActivityRepository.findAllVolunteersInActivityByVolunteer_Username(principal.getName());
+        Map<Volunteer, List<Activity>> volunteersActivity = allByUser.stream()
+                .collect(Collectors.groupingBy(VolunteersInActivity::getVolunteer, Collectors.mapping(VolunteersInActivity::getActivity, Collectors.toList())));
+        List<Activities> activitiesWithOrg = new ArrayList<>();
+        for (List<Activity> activities : volunteersActivity.values()) {
+            activitiesWithOrg = activitiesRepository.findAllByActivityIn(activities);
+        }
+        return getListOfActivitiesDTOForResponse(activitiesWithOrg);
+    }
+
+    public List<ActivitiesDTO> findNearbyActivities(NearbyActivitiesRequest nearbyActivitiesRequest) {
         List<ActivitiesDTO> activitiesByPlace = getListOfActivitiesDTOForResponse(
-                activitiesRepository.findActivityByCountryAndCity(nearbyActivitiesRequestDTO.getCountry(), nearbyActivitiesRequestDTO.getCity()));
+                activitiesRepository.findAllByActivity_CountryAndActivity_City(nearbyActivitiesRequest.getCountry(), nearbyActivitiesRequest.getCity()));
         if (activitiesByPlace.isEmpty()) {
-            return new ResponseEntity<>("No such activities in current place", HttpStatus.OK);
+            throw new DataNotFoundException("No such activities in "
+                                            + nearbyActivitiesRequest.getCountry() + " "
+                                            + nearbyActivitiesRequest.getCity());
         }
-        return new ResponseEntity<>(activitiesByPlace, HttpStatus.OK);
+        return activitiesByPlace;
     }
 
-    public Optional<Activity> findActivityByOrganisationAndIdOfActivity(AppUser appUser, Long idOfActivity) {
-        return activitiesRepository.findActivityByAppUserAndId(appUser, idOfActivity);
+    public Optional<Activities> findActivityByOrganizationAndIdOfActivity(Principal principal, Integer idOfActivity) {
+        return activitiesRepository.findByOrganization_UsernameAndActivity_Id(principal.getName(), idOfActivity);
     }
 
     /**
      * Methods to convert entities from DB to DTO for response
      */
-    private static ActivitiesDTO activitiesFromEntityToDto(OrganisationInfo additionalInfoAboutOrganisation, List<Activity> activitiesByAppUser) {
+    private ActivitiesDTO activitiesFromEntityToDto(List<Activities> activitiesByAppUser, Organization organization) {
         ActivitiesDTO activitiesDTO = new ActivitiesDTO();
-
-        OrganisationResponseDTO responseDTO = getOrganisationResponseDTO(additionalInfoAboutOrganisation);
-
-        for (Activity activity : activitiesByAppUser) {
-            activitiesDTO.addActivity(new ActivityDTO(activity.getId(),
-                    activity.getCity(),
-                    activity.getCountry(),
-                    activity.getDateOfPlace(),
-                    activity.getDescription(),
-                    activity.getTitle(),
-                    activity.getKindOfActivity()));
+        activitiesDTO.setOrganizationResponseDTO(getOrganizationResponseDTO(organization));
+        if (!activitiesByAppUser.isEmpty()) {
+            for (Activities activities : activitiesByAppUser) {
+                activitiesDTO.addActivity(new ActivityDTO(activities.getActivity().getId(),
+                        activities.getActivity().getCity(),
+                        activities.getActivity().getCountry(),
+                        activities.getActivity().getDateOfPlace(),
+                        activities.getActivity().getDescription(),
+                        activities.getActivity().getTitle(),
+                        activities.getActivity().getKindOfActivity().getName()));
+            }
         }
 
-        activitiesDTO.setOrganisationResponseDTO(responseDTO);
         return activitiesDTO;
     }
 
-    private static OrganisationResponseDTO getOrganisationResponseDTO(OrganisationInfo additionalInfoAboutOrganisation) {
-        return new OrganisationResponseDTO(
-                additionalInfoAboutOrganisation.getAppUser().getId(),
-                additionalInfoAboutOrganisation.getNameOfOrganisation(),
-                additionalInfoAboutOrganisation.getCountry(),
-                additionalInfoAboutOrganisation.getCity(),
-                additionalInfoAboutOrganisation.getAddress());
+    private OrganizationResponseDTO getOrganizationResponseDTO(Organization organization) {
+        return new OrganizationResponseDTO(
+                organization.getId(),
+                organization.getName(),
+                organization.getCountry(),
+                organization.getCity(),
+                organization.getAddress(),
+                organization.getEmail()
+        );
     }
 
 
-    private List<ActivitiesDTO> getListOfActivitiesDTOForResponse(List<Activity> activities) {
+    private List<ActivitiesDTO> getListOfActivitiesDTOForResponse(List<Activities> activities) {
         List<ActivitiesDTO> responseActivities = new ArrayList<>();
 
-        Map<AppUser, List<Activity>> activitiesByOrganisationMap = activities.stream()
-                .collect(Collectors.groupingBy(Activity::getAppUser));
+        Map<Organization, List<Activity>> activitiesByOrganizationMap = activities.stream()
+                .collect(Collectors.groupingBy(Activities::getOrganization,
+                        Collectors.mapping(Activities::getActivity, Collectors.toList())));
 
-        for (Map.Entry<AppUser, List<Activity>> organisationWithActivity : activitiesByOrganisationMap.entrySet()) {
-            responseActivities.add(activitiesFromEntityToDto(organisationService.findAdditionalInfoAboutOrganisation(organisationWithActivity.getKey()),
-                    organisationWithActivity.getValue()));
+        for (Map.Entry<Organization, List<Activity>> organizationWithActivity : activitiesByOrganizationMap.entrySet()) {
+            Organization organization = organizationWithActivity.getKey();
+            List<Activity> activitiesList = organizationWithActivity.getValue();
+            List<ActivityDTO> activityDtoList = activitiesList.stream()
+                    .map(this::activityToDTO)
+                    .collect(Collectors.toList());
+
+            ActivitiesDTO activitiesDto = new ActivitiesDTO(activityDtoList, getOrganizationResponseDTO(organization));
+            responseActivities.add(activitiesDto);
         }
+
         return responseActivities;
+    }
+
+    private ActivityDTO activityToDTO(Activity activity) {
+        return new ActivityDTO(
+                activity.getId(),
+                activity.getCity(),
+                activity.getCountry(),
+                activity.getDateOfPlace(),
+                activity.getDescription(),
+                activity.getTitle(),
+                activity.getKindOfActivity().getName()
+        );
     }
 }

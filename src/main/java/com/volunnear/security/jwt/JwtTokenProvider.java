@@ -69,7 +69,6 @@ public class JwtTokenProvider {
         return getClaimsFromToken(token).get("roles", List.class);
     }
 
-
     private Claims getClaimsFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secret)

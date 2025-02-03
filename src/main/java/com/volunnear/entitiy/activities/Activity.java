@@ -1,46 +1,46 @@
 package com.volunnear.entitiy.activities;
 
-import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.entitiy.infos.Preference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Getter
 @Setter
 @Entity
-@ToString
-@RequiredArgsConstructor
-@Table(name = "activities")
+@Builder
+@Table(name = "activity")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Column(name = "activity_id", nullable = false)
+    private Integer id;
 
-    @Column(name = "title")
-    private String title;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "country")
-    private String country;
-
-    @Column(name = "city")
+    @Size(max = 45)
+    @Column(name = "city", length = 45)
     private String city;
 
-    @Column(name = "kind_of_activity")
-    private String kindOfActivity;
+    @Size(max = 45)
+    @Column(name = "country", length = 45)
+    private String country;
 
-    @Temporal(TemporalType.DATE)
+    @Size(max = 45)
+    @Column(name = "title", length = 45)
+    private String title;
+
+    @Size(max = 225)
+    @Column(name = "description", length = 225)
+    private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "kind_of_activity")
+    private Preference kindOfActivity;
+
     @Column(name = "date_of_place")
-    private Date dateOfPlace;
+    private Instant dateOfPlace;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "app_user_id")
-    private AppUser appUser;
 }

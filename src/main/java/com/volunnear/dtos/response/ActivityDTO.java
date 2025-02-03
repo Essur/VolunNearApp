@@ -4,16 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ActivityDTO {
-    private Long id;
+    private Integer id;
     private String city;
     private String country;
-    private Date dateOfPlace;
+    private Instant dateOfPlace;
     private String description;
     private String title;
     private String kindOfActivity;

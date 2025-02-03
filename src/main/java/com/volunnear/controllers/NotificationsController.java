@@ -1,7 +1,7 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.services.notifications.EmailNotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -10,34 +10,38 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class NotificationsController {
     private final EmailNotificationService emailNotificationService;
 
-    @Operation(summary = "Get all subscriptions of volunteer", description = "Returns List<OrganisationResponseDTO>")
+    @Operation(summary = "Get all subscriptions of volunteer", description = "Returns List<OrganizationResponseDTO>")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List<OrganisationResponseDTO> (list of subscriptions with info about organisations)",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrganisationResponseDTO.class)))),
+            @ApiResponse(responseCode = "200", description = "List<OrganizationResponseDTO> (list of subscriptions with info about organizations)",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrganizationResponseDTO.class)))),
             @ApiResponse(responseCode = "400", description = "List of subscriptions is empty!")
     })
+    @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(Routes.GET_ALL_SUBSCRIPTIONS_OF_VOLUNTEER)
-    public ResponseEntity<?> getAllSubscriptionsOfVolunteer(Principal principal) {
+    public List<OrganizationResponseDTO> getAllSubscriptionsOfVolunteer(Principal principal) {
         return emailNotificationService.getAllSubscriptionsOfVolunteer(principal);
     }
 
-    @PostMapping(Routes.SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANISATION)
-    public ResponseEntity<String> subscribeToNotificationsByIdOfOrganisation(@RequestParam Long idOfOrganisation, Principal principal) {
-        return emailNotificationService.subscribeToNotificationByIdOfOrganisation(idOfOrganisation, principal);
+    @ResponseStatus(value = HttpStatus.OK)
+    @PostMapping(Routes.SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
+    public void subscribeToNotificationsByIdOfOrganization(@RequestParam Integer idOfOrganization, Principal principal) {
+        emailNotificationService.subscribeToNotificationByIdOfOrganization(idOfOrganization, principal);
     }
 
-    @DeleteMapping(Routes.UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANISATION)
-    public ResponseEntity<String> unsubscribeFromNotificationsByIdOfOrganisations(@RequestParam Long idOfOrganisation, Principal principal) {
-        return emailNotificationService.unsubscribeFromNotificationOfOrganisation(idOfOrganisation, principal);
+    @ResponseStatus(value = HttpStatus.OK)
+    @DeleteMapping(Routes.UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
+    public void unsubscribeFromNotificationsByIdOfOrganizations(@RequestParam Integer idOfOrganization, Principal principal) {
+        emailNotificationService.unsubscribeFromNotificationOfOrganization(idOfOrganization, principal);
     }
 }

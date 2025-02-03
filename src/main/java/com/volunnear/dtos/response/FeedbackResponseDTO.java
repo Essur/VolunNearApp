@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeedbackResponseDTO {
-    private Long id;
+    private Integer id;
     private int rate;
     private String description;
     private String realNameOfUser;

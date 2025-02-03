@@ -26,44 +26,40 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(Routes.REGISTER_ROUTE_SECURITY + "/**",
-                                Routes.LOGIN).permitAll()
-
+                                Routes.LOGIN,
+                                Routes.GET_ALL_ORGANIZATIONS,
+                                Routes.ACTIVITY_CURRENT_ORGANIZATION,
+                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
+                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
+                                Routes.GET_CHAT_LINK_BY_ACTIVITY,
+                                Routes.GET_COMMUNITY_LINK_BY_ORGANIZATION).permitAll()
                         .requestMatchers(Routes.SWAGGER_ENDPOINTS).permitAll()
                         .requestMatchers("/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                        .requestMatchers(Routes.REFRESH_TOKEN).hasAnyRole("VOLUNTEER", "ORGANIZATION")
 
                         .requestMatchers(Routes.VOLUNTEER + "/**",
                                 Routes.UPDATE_VOLUNTEER_PROFILE,
-                                Routes.POST_FEEDBACK_ABOUT_ORGANISATION,
-                                Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANISATION,
-                                Routes.DELETE_FEEDBACK_ABOUT_ORGANISATION,
+                                Routes.POST_FEEDBACK_ABOUT_ORGANIZATION,
+                                Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANIZATION,
+                                Routes.DELETE_FEEDBACK_ABOUT_ORGANIZATION,
                                 Routes.LOCATION + "/**",
                                 Routes.NOTIFICATIONS + "/**").hasRole("VOLUNTEER")
 
-                        .requestMatchers(Routes.UPDATE_ORGANISATION_PROFILE,
+                        .requestMatchers(Routes.UPDATE_ORGANIZATION_PROFILE,
                                 Routes.ADD_ACTIVITY,
                                 Routes.GET_MY_ACTIVITIES,
                                 Routes.UPDATE_ACTIVITY_INFORMATION,
                                 Routes.DELETE_CURRENT_ACTIVITY_BY_ID,
-                                Routes.GET_ORGANISATION_PROFILE,
+                                Routes.GET_ORGANIZATION_PROFILE,
                                 Routes.ADD_COMMUNITY_LINK,
-                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANISATION")
-
-                        .requestMatchers("/api/hello",
-                                Routes.GET_ALL_ORGANISATIONS,
-                                Routes.ACTIVITY_CURRENT_ORGANISATION,
-                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANISATIONS,
-                                Routes.GET_FEEDBACKS_OF_ALL_ORGANISATIONS,
-                                Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANISATION,
-                                Routes.GET_CHAT_LINK_BY_ACTIVITY,
-                                Routes.GET_COMMUNITY_LINK_BY_ORGANISATION)
-                        .hasAnyRole("VOLUNTEER", "ORGANISATION")
-
+                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());
         http.sessionManagement(sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

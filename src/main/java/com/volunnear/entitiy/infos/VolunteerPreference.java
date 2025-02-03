@@ -1,33 +1,25 @@
 package com.volunnear.entitiy.infos;
 
-import com.volunnear.entitiy.users.AppUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
 @Entity
-@Table(name = "volunteer_preference")
+@Table(name = "volunteer_preferences")
 public class VolunteerPreference {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @EmbeddedId
+    private VolunteerPreferenceId id;
 
-    @ManyToOne
-    @JoinColumn(name = "volunteer_id")
-    private AppUser volunteer;
+    @MapsId("volunteerId")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "volunteer_id", nullable = false)
+    private Volunteer volunteer;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "preferences")
-    @CollectionTable(name = "volunteer_preferences_list", joinColumns = @JoinColumn(name = "owner_id"))
-    private List<String> preferences = new ArrayList<>();
+    @MapsId("preferenceId")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "preference_id", nullable = false)
+    private Preference preference;
 
-    public void addPreferences(List<String> preferences) {
-        this.preferences.addAll(preferences);
-    }
 }

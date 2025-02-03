@@ -1,49 +1,47 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.jwt.JwtRefreshRequest;
+import com.volunnear.dtos.jwt.JwtRefreshTokenResponse;
 import com.volunnear.dtos.jwt.JwtRequest;
-import com.volunnear.dtos.requests.RegistrationOrganisationRequestDTO;
-import com.volunnear.dtos.requests.RegistrationVolunteerRequestDTO;
-import com.volunnear.dtos.requests.UpdateOrganisationInfoRequestDTO;
-import com.volunnear.dtos.requests.UpdateVolunteerInfoRequestDTO;
+import com.volunnear.dtos.jwt.JwtResponse;
+import com.volunnear.entitiy.users.RefreshToken;
+import com.volunnear.exception.TokenRefreshException;
 import com.volunnear.services.security.AuthService;
+import com.volunnear.services.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
+    @ResponseStatus(value = HttpStatus.OK)
     @PostMapping(value = Routes.LOGIN)
-    public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
-        return authService.createAuthToken(authRequest);
+    public JwtResponse createAuthToken(@RequestBody JwtRequest authRequest) {
+        String token = authService.createAuthToken(authRequest);
+        String role = authService.getAuthorities(token);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(authService.getUsernameByToken(token));
+        return new JwtResponse(token, role, refreshToken.getToken());
     }
 
-    @PostMapping(value = Routes.REGISTER_VOLUNTEER, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> registrationOfVolunteer(@RequestBody RegistrationVolunteerRequestDTO registrationVolunteerRequestDto) {
-        return authService.registrationOfVolunteer(registrationVolunteerRequestDto);
-    }
-
-    @PostMapping(value = Routes.REGISTER_ORGANISATION, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> registrationOfOrganisation(@RequestBody RegistrationOrganisationRequestDTO registrationOrganisationRequestDTO) {
-        return authService.registrationOfOrganisation(registrationOrganisationRequestDTO);
-    }
-
-    @PutMapping(value = Routes.UPDATE_VOLUNTEER_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateVolunteerInfo(@RequestBody UpdateVolunteerInfoRequestDTO updateVolunteerInfoRequestDTO, Principal principal) {
-        return authService.updateVolunteerInfo(updateVolunteerInfoRequestDTO, principal);
-    }
-
-    @PutMapping(value = Routes.UPDATE_ORGANISATION_PROFILE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateOrganisationInfo(@RequestBody UpdateOrganisationInfoRequestDTO updateOrganisationInfoRequest, Principal principal) {
-        return authService.updateOrganisationInfo(updateOrganisationInfoRequest, principal);
+    @ResponseStatus(value = HttpStatus.OK)
+    @PostMapping(value = Routes.REFRESH_TOKEN)
+    public JwtRefreshTokenResponse refreshAuthToken(@RequestBody JwtRefreshRequest refreshTokenRequest) {
+        String refreshToken = refreshTokenRequest.getRefreshToken();
+        return refreshTokenService.findByToken(refreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getAppUser)
+                .map(user -> {
+                    String token = authService.recreateToken(user.getUsername());
+                    return new JwtRefreshTokenResponse(token, refreshToken);
+                })
+                .orElseThrow(() -> new TokenRefreshException("Bad credentials, try re-login"));
     }
 }

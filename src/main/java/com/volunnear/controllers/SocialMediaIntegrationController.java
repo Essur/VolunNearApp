@@ -1,12 +1,14 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.requests.AddActivityLinkRequest;
+import com.volunnear.dtos.requests.AddCommunityLinkRequest;
 import com.volunnear.services.SocialMediaIntegrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -16,19 +18,20 @@ import java.security.Principal;
 public class SocialMediaIntegrationController {
     private final SocialMediaIntegrationService socialMediaIntegrationService;
 
-    @Operation(summary = "Add chat link to activity", description = "Requires organisation account (token), link and idOfActivity")
+    @Operation(summary = "Add chat link to activity", description = "Requires organization account (token), link and idOfActivity")
+    @ResponseStatus(value = HttpStatus.OK)
     @PostMapping(Routes.ADD_CHAT_LINK_FOR_ACTIVITY)
-    public ResponseEntity<?> addChatLinkToActivity(@RequestParam Long idOfActivity,
-                                                   @RequestBody String link,
+    public Integer addChatLinkToActivity(@RequestBody AddActivityLinkRequest addActivityLinkRequest,
                                                    Principal principal) {
-        return socialMediaIntegrationService.addChatLinkToActivity(idOfActivity, link, principal);
+        return socialMediaIntegrationService.addChatLinkToActivity(addActivityLinkRequest, principal);
     }
 
-    @Operation(summary = "Add community link", description = "Requires organisation account (token) and link")
+    @Operation(summary = "Add community link", description = "Requires organization account (token) and link")
+    @ResponseStatus(value = HttpStatus.OK)
     @PostMapping(Routes.ADD_COMMUNITY_LINK)
-    public ResponseEntity<?> addCommunityLink(@RequestBody String link,
+    public Integer addCommunityLink(@RequestBody AddCommunityLinkRequest linkRequestDTO,
                                               Principal principal) {
-        return socialMediaIntegrationService.addCommunityLink(link, principal);
+        return socialMediaIntegrationService.addCommunityLink(linkRequestDTO, principal);
     }
 
     @Operation(summary = "Get chat link by id of activity", description = "Method requires idOfActivity")
@@ -36,18 +39,20 @@ public class SocialMediaIntegrationController {
             @ApiResponse(responseCode = "200", description = "Link founded"),
             @ApiResponse(responseCode = "400", description = "Bad id of activity!")
     })
+    @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(Routes.GET_CHAT_LINK_BY_ACTIVITY)
-    public ResponseEntity<String> getChatLinkByActivity(@RequestParam Long idOfActivity) {
+    public String getChatLinkByActivity(@RequestParam Integer idOfActivity) {
         return socialMediaIntegrationService.getChatLinkByActivityId(idOfActivity);
     }
 
-    @Operation(summary = "Get community link by id of organisation", description = "Method requires idOfOrganisation")
+    @Operation(summary = "Get community link by id of organization", description = "Method requires idOfOrganization")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Link founded"),
-            @ApiResponse(responseCode = "400", description = "Bad id of organisation!")
+            @ApiResponse(responseCode = "400", description = "Bad id of organization!")
     })
-    @GetMapping(Routes.GET_COMMUNITY_LINK_BY_ORGANISATION)
-    public ResponseEntity<String> getCommunityLinkByOrganisation(@RequestParam Long idOfOrganisation) {
-        return socialMediaIntegrationService.getCommunityLinkByOrganisationId(idOfOrganisation);
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(Routes.GET_COMMUNITY_LINK_BY_ORGANIZATION)
+    public String getCommunityLinkByOrganization(@RequestParam Integer idOfOrganization) {
+        return socialMediaIntegrationService.getCommunityLinkByOrganizationId(idOfOrganization);
     }
 }

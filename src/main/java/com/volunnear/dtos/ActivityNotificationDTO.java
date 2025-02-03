@@ -1,7 +1,7 @@
 package com.volunnear.dtos;
 
 import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ActivityNotificationDTO {
     private ActivityDTO activityDTO;
-    private OrganisationResponseDTO organisationResponseDTO;
+    private OrganizationResponseDTO organizationResponseDTO;
 }

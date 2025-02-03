@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ActivitiesDTO {
     private List<ActivityDTO> activities;
-    private OrganisationResponseDTO organisationResponseDTO;
+    private OrganizationResponseDTO organizationResponseDTO;
 
     public ActivitiesDTO() {
         activities = new ArrayList<>();

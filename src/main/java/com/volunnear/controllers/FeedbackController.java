@@ -3,13 +3,13 @@ package com.volunnear.controllers;
 import com.volunnear.Routes;
 import com.volunnear.dtos.requests.FeedbackRequest;
 import com.volunnear.dtos.response.FeedbackResponseDTO;
-import com.volunnear.dtos.response.OrganisationResponseDTO;
+import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.services.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -21,35 +21,40 @@ import java.util.Map;
 public class FeedbackController {
     private final FeedbackService feedbackService;
 
-    @GetMapping(Routes.GET_FEEDBACKS_OF_ALL_ORGANISATIONS)
-    public Map<OrganisationResponseDTO, List<FeedbackResponseDTO>> getAllFeedbacksAboutAllOrganisations() {
-        return feedbackService.getAllFeedbacksAboutAllOrganisations();
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS)
+    public Map<OrganizationResponseDTO, List<FeedbackResponseDTO>> getAllFeedbacksAboutAllOrganizations() {
+        return feedbackService.getAllFeedbacksAboutAllOrganizations();
     }
 
-    @Operation(summary = "Get feedbacks from selected organisation", description = "Requires id of organisation. Returns " +
-            "Map<OrganisationResponseDTO, List<FeedbackResponseDTO>>")
+    @Operation(summary = "Get feedbacks from selected organization", description = "Requires id of organization. Returns " +
+            "Map<OrganizationResponseDTO, List<FeedbackResponseDTO>>")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Feedbacks of current organisation"),
-            @ApiResponse(responseCode = "400", description = "There is no feedback about that organisation"),
+            @ApiResponse(responseCode = "200", description = "Feedbacks of current organization"),
+            @ApiResponse(responseCode = "400", description = "There is no feedback about that organization"),
     })
-    @GetMapping(Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANISATION)
-    public ResponseEntity<?> getFeedbacksAboutCurrentOrganisation(@RequestParam Long id) {
-        return feedbackService.getFeedbacksAboutCurrentOrganisation(id);
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION)
+    public Map<OrganizationResponseDTO, List<FeedbackResponseDTO>> getFeedbacksAboutCurrentOrganization(@RequestParam Integer id) {
+        return feedbackService.getFeedbacksAboutCurrentOrganization(id);
     }
 
-    @PostMapping(Routes.POST_FEEDBACK_ABOUT_ORGANISATION)
-    public ResponseEntity<String> postFeedbackAboutOrganisation(@RequestBody FeedbackRequest feedbackRequest, Principal principal) {
-        return feedbackService.postFeedbackAboutOrganisation(feedbackRequest, principal);
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PostMapping(Routes.POST_FEEDBACK_ABOUT_ORGANIZATION)
+    public Integer postFeedbackAboutOrganization(@RequestBody FeedbackRequest feedbackRequest, Principal principal) {
+        return feedbackService.postFeedbackAboutOrganization(feedbackRequest, principal);
     }
 
-    @PutMapping(Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANISATION)
-    public ResponseEntity<String> updateFeedbackInfoForCurrentOrganisation(@RequestParam Long idOfFeedback,
+    @ResponseStatus(value = HttpStatus.OK)
+    @PutMapping(Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANIZATION)
+    public FeedbackResponseDTO updateFeedbackInfoForCurrentOrganization(@RequestParam Integer idOfFeedback,
                                                                            @RequestBody FeedbackRequest feedbackRequest, Principal principal) {
-        return feedbackService.updateFeedbackInfoForCurrentOrganisation(idOfFeedback, feedbackRequest, principal);
+        return feedbackService.updateFeedbackInfoForCurrentOrganization(idOfFeedback, feedbackRequest, principal);
     }
 
-    @DeleteMapping(Routes.DELETE_FEEDBACK_ABOUT_ORGANISATION)
-    public ResponseEntity<String> deleteFeedbackAboutOrganisation(@RequestParam Long idOfFeedback, Principal principal) {
-        return feedbackService.deleteFeedbackAboutOrganisation(idOfFeedback, principal);
+    @ResponseStatus(value = HttpStatus.OK)
+    @DeleteMapping(Routes.DELETE_FEEDBACK_ABOUT_ORGANIZATION)
+    public void deleteFeedbackAboutOrganization(@RequestParam Integer idOfFeedback, Principal principal) {
+        feedbackService.deleteFeedbackAboutOrganization(idOfFeedback, principal);
     }
 }

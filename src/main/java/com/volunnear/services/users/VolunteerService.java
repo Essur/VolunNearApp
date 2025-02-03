@@ -1,95 +1,184 @@
 package com.volunnear.services.users;
 
-import com.volunnear.dtos.VolunteerDTO;
-import com.volunnear.dtos.requests.PreferencesRequestDTO;
+import com.volunnear.dtos.requests.DeletePreferenceFromVolunteerProfileRequest;
+import com.volunnear.dtos.requests.PreferencesRequest;
+import com.volunnear.dtos.requests.RegistrationVolunteerRequest;
+import com.volunnear.dtos.requests.UpdateVolunteerInfoRequest;
 import com.volunnear.dtos.response.VolunteerProfileResponseDTO;
-import com.volunnear.entitiy.infos.VolunteerInfo;
+import com.volunnear.entitiy.infos.Preference;
+import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.entitiy.infos.VolunteerPreference;
+import com.volunnear.entitiy.infos.VolunteerPreferenceId;
 import com.volunnear.entitiy.users.AppUser;
-import com.volunnear.repositories.infos.VolunteerInfoRepository;
+import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.DataNotFoundException;
+import com.volunnear.exception.UserAlreadyExistsException;
+import com.volunnear.repositories.infos.PreferenceRepository;
 import com.volunnear.repositories.infos.VolunteerPreferenceRepository;
-import com.volunnear.repositories.users.UserRepository;
+import com.volunnear.repositories.infos.VolunteerRepository;
+import com.volunnear.repositories.users.AppUserRepository;
+import com.volunnear.repositories.users.RefreshTokenRepository;
 import com.volunnear.services.activities.ActivityService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class VolunteerService {
-    private final RoleService roleService;
-    private final UserRepository userRepository;
-    private final ActivityService activityService;
+    private ActivityService activityService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final VolunteerInfoRepository volunteerInfoRepository;
+    private final AppUserRepository appUserRepository;
+    private final VolunteerRepository volunteerRepository;
+    private final PreferenceRepository preferenceRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final VolunteerPreferenceRepository volunteerPreferenceRepository;
+    private final Logger logger = LoggerFactory.getLogger(VolunteerService.class);
+
+    @Lazy
+    @Autowired
+    public void setActivityService(ActivityService activityService) {
+        this.activityService = activityService;
+    }
+
+    public Integer registerVolunteer(RegistrationVolunteerRequest registrationVolunteerRequest) {
+        if (appUserRepository.existsByUsername(registrationVolunteerRequest.getUsername())) {
+            throw new UserAlreadyExistsException("User with username " + registrationVolunteerRequest.getUsername() + " already exists");
+        }
+        AppUser appUser = new AppUser();
+        appUser.setUsername(registrationVolunteerRequest.getUsername());
+        appUser.setPassword(passwordEncoder.encode(registrationVolunteerRequest.getPassword()));
+        appUser.setRoles(Set.of("VOLUNTEER"));
+        appUserRepository.save(appUser);
+
+        addAdditionalInfo(registrationVolunteerRequest);
+        return appUser.getId();
+    }
 
     public VolunteerProfileResponseDTO getVolunteerProfile(Principal principal) {
-        AppUser appUser = loadUserFromDbByUsername(principal);
-        VolunteerInfo volunteerInfo = volunteerInfoRepository.getVolunteerInfoByAppUser(appUser);
-        Optional<VolunteerPreference> volunteerPreferenceByVolunteer = volunteerPreferenceRepository.findVolunteerPreferenceByVolunteer(appUser);
+        Volunteer volunteerByUsername = volunteerRepository.findByUsername(principal.getName()).get();
+        List<VolunteerPreference> volunteerPreferences = volunteerPreferenceRepository.findAllByVolunteer_Username(principal.getName());
+        List<VolunteerPreferenceDTO> preferences = new ArrayList<>();
+        for (VolunteerPreference volunteerPreference :volunteerPreferences) {
+            preferences.add(new VolunteerPreferenceDTO(
+                    volunteerPreference.getId().getPreferenceId(),
+                    volunteerPreference.getId().getVolunteerId(),
+                    volunteerPreference.getPreference().getName()));
+        }
+
         VolunteerProfileResponseDTO profileResponse = new VolunteerProfileResponseDTO();
 
-        profileResponse.setEmail(appUser.getEmail());
-        profileResponse.setUsername(principal.getName());
-        profileResponse.setRealName(volunteerInfo.getRealNameOfUser());
-        if (volunteerPreferenceByVolunteer.isEmpty()) {
-            profileResponse.setPreferences(List.of("Preferences is empty"));
-        } else profileResponse.setPreferences(volunteerPreferenceByVolunteer.get().getPreferences());
-        profileResponse.setActivitiesDTO(activityService.getActivitiesOfVolunteer(appUser));
+        profileResponse.setEmail(volunteerByUsername.getEmail());
+        profileResponse.setUsername(volunteerByUsername.getUsername());
+        profileResponse.setFirstName(volunteerByUsername.getFirstName());
+        profileResponse.setLastName(volunteerByUsername.getLastName());
+        if (!preferences.isEmpty()) {
+            profileResponse.setPreferences(preferences);
+
+        } else {
+            profileResponse.setPreferences(new ArrayList<>());
+        }
+        profileResponse.setActivitiesDTO(activityService.getActivitiesOfVolunteer(principal));
 
         return profileResponse;
     }
 
-    public String setPreferencesForVolunteer(PreferencesRequestDTO preferencesRequestDTO, Principal principal) {
-        AppUser appUser = loadUserFromDbByUsername(principal);
-        VolunteerPreference preference = new VolunteerPreference();
-        preference.addPreferences(preferencesRequestDTO.getPreferences());
-        preference.setVolunteer(appUser);
-        volunteerPreferenceRepository.save(preference);
-        return "Successfully set your preferences";
+    public VolunteerProfileResponseDTO setPreferencesForVolunteer(PreferencesRequest preferencesRequest, Principal principal) {
+        Volunteer volunteer = volunteerRepository.findByUsername(principal.getName()).get();
+
+        for (String preference : preferencesRequest.getPreferences()) {
+            if (!preferenceRepository.existsPreferenceByNameIgnoreCase(preference)) {
+                Preference newPreference = new Preference();
+                newPreference.setName(preference);
+                preferenceRepository.save(newPreference);
+            }
+        }
+        List<Preference> preferences = preferenceRepository.findAllByNameIgnoreCaseIn(preferencesRequest.getPreferences());
+
+        List<VolunteerPreference> volunteerPreferences = new ArrayList<>();
+
+        for (Preference preference : preferences) {
+            VolunteerPreference volunteerPreference = new VolunteerPreference();
+            volunteerPreference.setId(new VolunteerPreferenceId(volunteer.getId(), preference.getId()));
+            volunteerPreference.setVolunteer(volunteer);
+            volunteerPreference.setPreference(preference);
+            volunteerPreferences.add(volunteerPreference);
+        }
+        volunteerPreferenceRepository.saveAll(volunteerPreferences);
+        return getVolunteerProfile(principal);
     }
 
-    public Optional<VolunteerPreference> getPreferencesOfUser(Principal principal) {
-        AppUser appUser = loadUserFromDbByUsername(principal);
-        return volunteerPreferenceRepository.findVolunteerPreferenceByVolunteer(appUser);
+    public List<VolunteerPreference> getPreferencesOfUser(Principal principal) {
+        return volunteerPreferenceRepository.findAllByVolunteer_Username(principal.getName());
     }
 
-    public VolunteerInfo getVolunteerInfo(AppUser appUser) {
-        return volunteerInfoRepository.getVolunteerInfoByAppUser(appUser);
+    @Transactional
+    public void deletePreferenceById(DeletePreferenceFromVolunteerProfileRequest preferenceId, Principal principal) {
+        Optional<Preference> preferenceById = preferenceRepository.findPreferenceById(preferenceId.getPreferenceId());
+
+        Volunteer volunteer = volunteerRepository.findByUsername(principal.getName()).get();
+        logger.info(volunteer.toString());
+        logger.info(preferenceById.toString());
+
+        if (preferenceById.isEmpty()) {
+            throw new DataNotFoundException("Preference with id " + preferenceId.getPreferenceId() + " not found");
+        }
+        volunteerPreferenceRepository.deleteVolunteerPreferenceByPreference_IdAndVolunteer_Id(preferenceId.getPreferenceId(), volunteer.getId());
     }
 
-    public void updateVolunteerInfo(AppUser appUser, VolunteerInfo volunteerInfo) {
-        userRepository.save(appUser);
-        volunteerInfoRepository.save(volunteerInfo);
+    public Optional<Volunteer> getVolunteerInfo(Principal principal) {
+        return volunteerRepository.findByUsername(principal.getName());
     }
 
-    public void registerVolunteer(VolunteerDTO volunteerDTO) {
-        AppUser appUser = new AppUser();
-        appUser.setUsername(volunteerDTO.getCredentials().getUsername());
-        appUser.setPassword(passwordEncoder.encode(volunteerDTO.getCredentials().getPassword()));
-        appUser.setEmail(volunteerDTO.getCredentials().getEmail());
-        appUser.setRoles(roleService.getRoleByName("ROLE_VOLUNTEER"));
-        userRepository.save(appUser);
-        addAdditionalInfo(appUser, volunteerDTO.getNameOfUser());
+    public VolunteerProfileResponseDTO updateVolunteerInfo(UpdateVolunteerInfoRequest updateVolunteerInfoRequest, Principal principal) {
+        Optional<Volunteer> byUsername = volunteerRepository.findByUsername(principal.getName());
+        if (byUsername.isEmpty()) {
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
+        }
+        Volunteer volunteer = byUsername.get();
+        volunteer.setEmail(updateVolunteerInfoRequest.getEmail());
+        volunteer.setFirstName(updateVolunteerInfoRequest.getFirstName());
+        volunteer.setLastName(updateVolunteerInfoRequest.getLastName());
+        volunteerRepository.save(volunteer);
+
+        return getVolunteerProfile(principal);
     }
 
-    public boolean isUserAreVolunteer(AppUser appUser) {
-        return volunteerInfoRepository.existsByAppUser(appUser);
+    @Transactional
+    public void deleteVolunteerProfile(Principal principal) {
+        Optional<Volunteer> volunteer = volunteerRepository.findByUsername(principal.getName());
+        if (volunteer.isPresent()) {
+            refreshTokenRepository.deleteByAppUser_Username(principal.getName());
+            volunteerPreferenceRepository.deleteAllByVolunteer_Username(volunteer.get().getUsername());
+            volunteerRepository.delete(volunteer.get());
+            appUserRepository.deleteAppUserByUsername(principal.getName());
+        } else {
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
+        }
     }
 
-    private void addAdditionalInfo(AppUser appUser, String realName) {
-        VolunteerInfo volunteerInfo = new VolunteerInfo();
-        volunteerInfo.setRealNameOfUser(realName);
-        volunteerInfo.setAppUser(appUser);
-        volunteerInfoRepository.save(volunteerInfo);
+    public boolean isUserAreVolunteer(Volunteer volunteer) {
+        return volunteerRepository.existsByUsername(volunteer.getUsername());
     }
 
-    private AppUser loadUserFromDbByUsername(Principal principal) {
-        return userRepository.findAppUserByUsername(principal.getName()).get();
+    private void addAdditionalInfo(RegistrationVolunteerRequest requestDTO) {
+        Volunteer volunteer = new Volunteer();
+        volunteer.setUsername(requestDTO.getUsername());
+        volunteer.setFirstName(requestDTO.getFirstName());
+        volunteer.setLastName(requestDTO.getLastName());
+        volunteer.setEmail(requestDTO.getEmail());
+        volunteerRepository.save(volunteer);
     }
+
 }
