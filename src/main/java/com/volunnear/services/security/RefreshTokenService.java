@@ -5,6 +5,7 @@ import com.volunnear.entitiy.users.RefreshToken;
 import com.volunnear.exception.TokenRefreshException;
 import com.volunnear.repositories.users.AppUserRepository;
 import com.volunnear.repositories.users.RefreshTokenRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,17 @@ public class RefreshTokenService {
             refreshTokenRepository.save(refreshToken);
             return refreshToken;
         }
-        return refreshTokenRepository.findByAppUser(appUser).get();
+        RefreshToken refreshToken = refreshTokenRepository.findByAppUser(appUser).get();
+        refreshToken.setExpiryDate(Instant.now().plusMillis(expireDate));
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshTokenRepository.save(refreshToken);
+        return refreshToken;
     }
 
+    @Transactional
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
-            refreshTokenRepository.delete(token);
+            refreshTokenRepository.deleteByToken(token.getToken());
             throw new TokenRefreshException("Refresh token was expired. Please make a new sign-in request");
         }
         return token;

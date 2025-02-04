@@ -16,7 +16,7 @@ public class RefreshToken {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @OneToOne(orphanRemoval = true)
+    @OneToOne
     @JoinColumn(name = "app_user_app_user_id")
     private AppUser appUser;
 
