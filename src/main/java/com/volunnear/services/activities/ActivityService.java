@@ -6,6 +6,7 @@ import com.volunnear.dtos.requests.NearbyActivitiesRequest;
 import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.ActivityDTO;
+import com.volunnear.dtos.response.ActivityInfoDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.activities.*;
 import com.volunnear.entitiy.infos.Organization;
@@ -107,12 +108,12 @@ public class ActivityService {
         eventPublisher.publishEvent(new ActivityCreationEvent(this, notificationDTO, status));
     }
 
-    public List<ActivitiesDTO> getAllActivitiesOfAllOrganizations() {
+    public List<ActivityDTO> getAllActivities() {
         List<Activities> allActivities = activitiesRepository.findAll();
         if (allActivities.isEmpty()) {
             throw new DataNotFoundException("Activities list is empty");
         }
-        return getListOfActivitiesDTOForResponse(allActivities);
+        return getListOfAllActivities(allActivities);
     }
 
     /**
@@ -239,9 +240,34 @@ public class ActivityService {
         return activitiesRepository.findByOrganization_UsernameAndActivity_Id(principal.getName(), idOfActivity);
     }
 
+    public ActivityInfoDTO getActivityInfoByActivityId(Integer activityId) {
+        Optional<Activities> activitiesByActivityId = activitiesRepository.findActivitiesByActivity_Id(activityId);
+        if (activitiesByActivityId.isEmpty()) {
+            throw new DataNotFoundException("Activity with id " + activityId + " was not found");
+        }
+        return getActivityInfoDTO(activitiesByActivityId.get());
+    }
+
     /**
      * Methods to convert entities from DB to DTO for response
      */
+
+    private ActivityInfoDTO getActivityInfoDTO(Activities activityEntity){
+        ActivityInfoDTO activityInfoDTO = new ActivityInfoDTO();
+        Activity activity = activityEntity.getActivity();
+        activityInfoDTO.setOrganizationId(activityEntity.getOrganization().getId());
+
+        activityInfoDTO.setId(activity.getId());
+        activityInfoDTO.setTitle(activity.getTitle());
+        activityInfoDTO.setDescription(activity.getDescription());
+        activityInfoDTO.setCountry(activity.getCountry());
+        activityInfoDTO.setCity(activity.getCity());
+        activityInfoDTO.setDateOfPlace(activity.getDateOfPlace());
+        activityInfoDTO.setKindOfActivity(activity.getKindOfActivity().getName());
+
+        return activityInfoDTO;
+    }
+
     private ActivitiesDTO activitiesFromEntityToDto(List<Activities> activitiesByAppUser, Organization organization) {
         ActivitiesDTO activitiesDTO = new ActivitiesDTO();
         activitiesDTO.setOrganizationResponseDTO(getOrganizationResponseDTO(organization));
@@ -271,7 +297,18 @@ public class ActivityService {
         );
     }
 
-
+    private List<ActivityDTO> getListOfAllActivities(List<Activities> activities) {
+        return new ArrayList<>(activities.stream().map(Activities::getActivity).map(activity ->
+                new ActivityDTO(
+                        activity.getId(),
+                        activity.getCity(),
+                        activity.getCountry(),
+                        activity.getDateOfPlace(),
+                        activity.getDescription(),
+                        activity.getTitle(),
+                        activity.getKindOfActivity().getName()
+                )).toList());
+    }
     private List<ActivitiesDTO> getListOfActivitiesDTOForResponse(List<Activities> activities) {
         List<ActivitiesDTO> responseActivities = new ArrayList<>();
 
@@ -304,4 +341,5 @@ public class ActivityService {
                 activity.getKindOfActivity().getName()
         );
     }
+
 }

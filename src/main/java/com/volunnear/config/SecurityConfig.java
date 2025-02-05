@@ -27,9 +27,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(Routes.REGISTER_ROUTE_SECURITY + "/**",
                                 Routes.LOGIN,
+                                Routes.GET_ACTIVITY_INFO,
+                                Routes.GET_ALL_ACTIVITIES,
                                 Routes.GET_ALL_ORGANIZATIONS,
                                 Routes.ACTIVITY_CURRENT_ORGANIZATION,
-                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
                                 Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
                                 Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
                                 Routes.GET_CHAT_LINK_BY_ACTIVITY,
