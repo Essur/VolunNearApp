@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ActivitiesRepository extends JpaRepository<Activities, Integer> {
     Optional<Activities> findActivitiesByActivityId(Integer id);
-
+    Optional<Activities> findActivitiesByActivity_Id(Integer activityId);
     List<Activities> findAllByOrganization_Username(String username);
 
     List<Activities> findAllByOrganization_Name(String name);
