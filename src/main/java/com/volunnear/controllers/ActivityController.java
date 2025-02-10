@@ -34,12 +34,6 @@ public class ActivityController {
     }
 
     @ResponseStatus(value = HttpStatus.OK)
-    @PostMapping(value = Routes.JOIN_TO_ACTIVITY)
-    public String addVolunteerToActivity(@RequestParam Integer id, Principal principal) {
-        return activityService.addVolunteerToActivity(principal, id);
-    }
-
-    @ResponseStatus(value = HttpStatus.OK)
     @PutMapping(value = Routes.UPDATE_ACTIVITY_INFORMATION, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ActivityDTO updateActivityInformation(@RequestParam Integer idOfActivity,
                                                  @RequestBody UpdateActivityInfoRequest activityRequestDTO, Principal principal) {
@@ -86,11 +80,5 @@ public class ActivityController {
     @DeleteMapping(value = Routes.DELETE_CURRENT_ACTIVITY_BY_ID)
     public void deleteActivityById(@RequestParam Integer id, Principal principal) {
         activityService.deleteActivityById(id, principal);
-    }
-
-    @ResponseStatus(value = HttpStatus.OK)
-    @DeleteMapping(value = Routes.LEAVE_FROM_ACTIVITY_BY_VOLUNTEER)
-    public void deleteVolunteerFromActivity(@RequestParam Integer id, Principal principal) {
-        activityService.deleteVolunteerFromActivity(id, principal);
     }
 }

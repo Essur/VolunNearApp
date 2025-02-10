@@ -1,14 +1,12 @@
-package com.volunnear.dtos.requests;
+package com.volunnear.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PreferencesRequest {
-    private List<String> preferences;
+public class VolunteerActivityRequestStatus {
+    private String requestStatus;
 }

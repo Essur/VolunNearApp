@@ -2,6 +2,7 @@ package com.volunnear.repositories.activities;
 
 import com.volunnear.entitiy.activities.Activities;
 import com.volunnear.entitiy.activities.Activity;
+import com.volunnear.entitiy.infos.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -22,4 +23,5 @@ public interface ActivitiesRepository extends JpaRepository<Activities, Integer>
 
     Optional<Activities> findByOrganization_UsernameAndActivity_Id(String username, Integer id);
     void deleteAllByOrganization_Id(Integer organizationId);
+    boolean existsByActivityAndOrganization(Activity activity, Organization organization);
 }
