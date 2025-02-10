@@ -1,6 +1,5 @@
 package com.volunnear.entitiy.activities;
 
-import com.volunnear.entitiy.infos.Preference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -32,13 +31,12 @@ public class Activity {
     @Column(name = "title", length = 45)
     private String title;
 
-    @Size(max = 225)
-    @Column(name = "description", length = 225)
+    @Lob
+    @Column(name = "description",columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "kind_of_activity")
-    private Preference kindOfActivity;
+    @Column(name = "kind_of_activity")
+    private String kindOfActivity;
 
     @Column(name = "date_of_place")
     private Instant dateOfPlace;

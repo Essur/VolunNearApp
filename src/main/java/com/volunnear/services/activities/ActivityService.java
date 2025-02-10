@@ -10,7 +10,6 @@ import com.volunnear.dtos.response.ActivityInfoDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.activities.*;
 import com.volunnear.entitiy.infos.Organization;
-import com.volunnear.entitiy.infos.Preference;
 import com.volunnear.entitiy.infos.Volunteer;
 import com.volunnear.events.ActivityCreationEvent;
 import com.volunnear.exception.BadUserCredentialsException;
@@ -18,15 +17,11 @@ import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.activities.ActivityRepository;
 import com.volunnear.repositories.activities.VolunteersInActivityRepository;
-import com.volunnear.repositories.infos.PreferenceRepository;
 import com.volunnear.services.users.OrganizationService;
-import com.volunnear.services.users.VolunteerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -41,19 +36,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ActivityService {
-    private VolunteerService volunteerService;
     private final ActivityRepository activityRepository;
     private final OrganizationService organizationService;
     private final ApplicationEventPublisher eventPublisher;
     private final ActivitiesRepository activitiesRepository;
-    private final PreferenceRepository preferenceRepository;
     private final VolunteersInActivityRepository volunteersInActivityRepository;
-
-    @Lazy
-    @Autowired
-    public void setVolunteerService(VolunteerService volunteerService) {
-        this.volunteerService = volunteerService;
-    }
 
     @Transactional
     public Integer addActivityToOrganization(AddActivityRequest activityRequest, Principal principal) {
@@ -61,18 +48,13 @@ public class ActivityService {
         if (organization.isEmpty()) {
             throw new BadUserCredentialsException("User with username " + principal.getName() + " was not found");
         }
-        if (!preferenceRepository.existsPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())) {
-            Preference newPreference = new Preference();
-            newPreference.setName(activityRequest.getKindOfActivity());
-            preferenceRepository.save(newPreference);
-        }
-        Preference preference = preferenceRepository.findPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity()).get();
+
         Activity activity = Activity.builder()
                 .title(activityRequest.getTitle())
                 .description(activityRequest.getDescription())
                 .country(activityRequest.getCountry())
                 .city(activityRequest.getCity())
-                .kindOfActivity(preference)
+                .kindOfActivity(activityRequest.getKindOfActivity())
                 .dateOfPlace(Instant.now()).build();
         activityRepository.save(activity);
 
@@ -96,7 +78,7 @@ public class ActivityService {
         activityDTO.setId(activity.getId());
         activityDTO.setCity(activity.getCity());
         activityDTO.setCountry(activity.getCountry());
-        activityDTO.setKindOfActivity(activity.getKindOfActivity().getName());
+        activityDTO.setKindOfActivity(activity.getKindOfActivity());
         activityDTO.setTitle(activity.getTitle());
         activityDTO.setDescription(activity.getDescription());
         activityDTO.setDateOfPlace(activity.getDateOfPlace());
@@ -138,7 +120,7 @@ public class ActivityService {
     }
 
     public List<ActivitiesDTO> getActivitiesOfOrganizationByPreferences(List<String> preferences) {
-        List<Activity> activitiesByKindOfActivity = activityRepository.findAllActivitiesByKindOfActivity_NameIgnoreCaseIn(preferences);
+        List<Activity> activitiesByKindOfActivity = activityRepository.findAllActivitiesByKindOfActivityIgnoreCaseIn(preferences);
         List<Activities> allByActivityContains = activitiesRepository.findAllByActivityIn(activitiesByKindOfActivity);
         return getListOfActivitiesDTOForResponse(allByActivityContains);
     }
@@ -160,26 +142,21 @@ public class ActivityService {
     }
 
     @Transactional
-    public String addVolunteerToActivity(Principal principal, Integer idOfActivity) {
-        Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
-        if (volunteerInfo.isEmpty()) {
-            throw new BadUserCredentialsException("Bad credentials, try re-login");
-        }
+    public boolean addVolunteerToActivity(Volunteer volunteer, Integer idOfActivity, Principal organizationPrincipal) {
         Optional<Activity> activityById = activityRepository.findById(idOfActivity);
 
-        if (activityById.isEmpty()) {
+        if (activityById.isEmpty() || activitiesRepository.findByOrganization_UsernameAndActivity_Id(organizationPrincipal.getName(), idOfActivity).isEmpty()) {
             throw new DataNotFoundException("No such activity in our database");
         }
 
         VolunteersInActivity volunteerInActivity = new VolunteersInActivity();
 
-        volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(), volunteerInfo.get().getId()));
+        volunteerInActivity.setId(new VolunteersInActivityId(activityById.get().getId(), volunteer.getId()));
         volunteerInActivity.setActivity(activityById.get());
-        volunteerInActivity.setVolunteer(volunteerInfo.get());
+        volunteerInActivity.setVolunteer(volunteer);
         volunteerInActivity.setDateOfEntry(Instant.now());
         volunteersInActivityRepository.save(volunteerInActivity);
-
-        return volunteerInActivity.getActivity().getTitle();
+        return true;
     }
 
     public ActivityDTO updateActivityInformation(Integer idOfActivity, UpdateActivityInfoRequest activityRequest, Principal principal) {
@@ -189,17 +166,13 @@ public class ActivityService {
         }
 
         Activity activity = activityById.get().getActivity();
-        Preference preference = preferenceRepository.findPreferenceByNameIgnoreCase(activityRequest.getKindOfActivity())
-                .orElseGet(() -> preferenceRepository.save(Preference.builder()
-                        .name(activityRequest.getKindOfActivity())
-                        .build()));
 
         activity.setTitle(activityRequest.getTitle());
         activity.setDescription(activityRequest.getDescription());
         activity.setCountry(activityRequest.getCountry());
         activity.setCity(activityRequest.getCity());
         activity.setDateOfPlace(Instant.now());
-        activity.setKindOfActivity(preference);
+        activity.setKindOfActivity(activityRequest.getKindOfActivity());
         activityRepository.save(activity);
         sendNotificationForSubscribers(activity, "Updated");
 
@@ -207,11 +180,13 @@ public class ActivityService {
     }
 
     @Transactional
-    public void deleteVolunteerFromActivity(Integer id, Principal principal) {
-        if (!volunteersInActivityRepository.existsByActivity_IdAndVolunteer_Username(id, principal.getName())) {
-            throw new DataNotFoundException("Activity with id " + id + " was not found");
-        }
-        volunteersInActivityRepository.deleteByActivity_IdAndVolunteer_Username(id, principal.getName());
+    public void deleteVolunteerFromActivity(Activity activity, Volunteer volunteer) {
+        volunteersInActivityRepository.deleteByActivityAndVolunteer(activity, volunteer);
+    }
+
+    public boolean isActivityBelongToOrganization(Activity activity, Principal principal) {
+        Organization organizationProfile = organizationService.getOrganizationProfile(principal);
+        return activitiesRepository.existsByActivityAndOrganization(activity, organizationProfile);
     }
 
     public List<ActivitiesDTO> getActivitiesOfVolunteer(Principal principal) {
@@ -252,7 +227,7 @@ public class ActivityService {
      * Methods to convert entities from DB to DTO for response
      */
 
-    private ActivityInfoDTO getActivityInfoDTO(Activities activityEntity){
+    private ActivityInfoDTO getActivityInfoDTO(Activities activityEntity) {
         ActivityInfoDTO activityInfoDTO = new ActivityInfoDTO();
         Activity activity = activityEntity.getActivity();
         activityInfoDTO.setOrganizationId(activityEntity.getOrganization().getId());
@@ -263,7 +238,7 @@ public class ActivityService {
         activityInfoDTO.setCountry(activity.getCountry());
         activityInfoDTO.setCity(activity.getCity());
         activityInfoDTO.setDateOfPlace(activity.getDateOfPlace());
-        activityInfoDTO.setKindOfActivity(activity.getKindOfActivity().getName());
+        activityInfoDTO.setKindOfActivity(activity.getKindOfActivity());
 
         return activityInfoDTO;
     }
@@ -279,7 +254,7 @@ public class ActivityService {
                         activities.getActivity().getDateOfPlace(),
                         activities.getActivity().getDescription(),
                         activities.getActivity().getTitle(),
-                        activities.getActivity().getKindOfActivity().getName()));
+                        activities.getActivity().getKindOfActivity()));
             }
         }
 
@@ -306,9 +281,10 @@ public class ActivityService {
                         activity.getDateOfPlace(),
                         activity.getDescription(),
                         activity.getTitle(),
-                        activity.getKindOfActivity().getName()
+                        activity.getKindOfActivity()
                 )).toList());
     }
+
     private List<ActivitiesDTO> getListOfActivitiesDTOForResponse(List<Activities> activities) {
         List<ActivitiesDTO> responseActivities = new ArrayList<>();
 
@@ -338,7 +314,7 @@ public class ActivityService {
                 activity.getDateOfPlace(),
                 activity.getDescription(),
                 activity.getTitle(),
-                activity.getKindOfActivity().getName()
+                activity.getKindOfActivity()
         );
     }
 
