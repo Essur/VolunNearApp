@@ -119,12 +119,9 @@ public class ActivityService {
         return activitiesFromEntityToDto(allByOrganizationName, organizationByNameOfOrganization.get());
     }
 
-    public List<ActivitiesDTO> getActivitiesOfOrganizationByPreferences(List<String> preferences) {
-        List<Activity> activitiesByKindOfActivity = activityRepository.findAllActivitiesByKindOfActivityIgnoreCaseIn(preferences);
-        List<Activities> allByActivityContains = activitiesRepository.findAllByActivityIn(activitiesByKindOfActivity);
-        return getListOfActivitiesDTOForResponse(allByActivityContains);
+    public List<Activities> getActivitiesOfOrganizationByUsername(Principal principal) {
+        return activitiesRepository.findActivitiesByOrganization_Username(principal.getName());
     }
-
 
     /**
      * Delete activity by id and from org principal (organization data)
