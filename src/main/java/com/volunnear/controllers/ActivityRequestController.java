@@ -1,6 +1,8 @@
 package com.volunnear.controllers;
 
 import com.volunnear.Routes;
+import com.volunnear.dtos.response.ActivityRequestInfoResponse;
+import com.volunnear.dtos.response.OrganizationActivityRequestInfoResponse;
 import com.volunnear.dtos.response.VolunteerActivityRequestStatus;
 import com.volunnear.entitiy.activities.VolunteerActivityRequest;
 import com.volunnear.services.activities.VolunteerActivityRequestService;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,6 +54,16 @@ public class ActivityRequestController {
         VolunteerActivityRequest requestStatusInfo = volunteerActivityRequestService.getRequestStatusInfo(activityId, principal);
         return new VolunteerActivityRequestStatus(requestStatusInfo.getStatus().toString());
     }
-//    TODO: @GetMapping(value = Routes.GET_ORGANIZATION_REQUESTS)
-//    TODO: @GetMapping(value = Routes.GET_VOLUNTEER_REQUESTS)
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_ORGANIZATION_ACTIVITY_REQUESTS)
+    public List<OrganizationActivityRequestInfoResponse> getVolunteersActivityRequestsForOrganization(Principal principal) {
+        return volunteerActivityRequestService.getVolunteersActivityRequestsForOrganization(principal);
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_VOLUNTEER_ACTIVITY_REQUESTS)
+    public List<ActivityRequestInfoResponse> getVolunteersActivityRequestForVolunteer(Principal principal) {
+        return volunteerActivityRequestService.getVolunteerActivityRequestsForVolunteer(principal);
+    }
 }

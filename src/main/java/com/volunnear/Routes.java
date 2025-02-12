@@ -23,6 +23,7 @@ public class Routes {
     public static final String DELETE_ORGANIZATION_PROFILE = ORGANIZATION + "/delete-profile";
     public static final String APPROVE_VOLUNTEER_TO_ACTIVITY = ORGANIZATION + "/approve-volunteer";
     public static final String KICK_VOLUNTEER_FORM_ACTIVITY = ORGANIZATION + "/kick-volunteer";
+    public static final String GET_ORGANIZATION_ACTIVITY_REQUESTS = ORGANIZATION + "/my-requests";
 
     /**
      * Volunteers routes
@@ -36,6 +37,7 @@ public class Routes {
     public static final String SET_VOLUNTEERS_PREFERENCES = VOLUNTEER + "/set-preferences";
     public static final String LEAVE_FROM_ACTIVITY_BY_VOLUNTEER = VOLUNTEER + "/leave-activity";
     public static final String GET_RECOMMENDATION_BY_PREFERENCES = VOLUNTEER + "/recommendations";
+    public static final String GET_VOLUNTEER_ACTIVITY_REQUESTS = VOLUNTEER + "/my-requests";
 
     /**
      * Activity routes
