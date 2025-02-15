@@ -44,8 +44,9 @@ public class ActivityRequestController {
 
     @ResponseStatus(value = HttpStatus.OK)
     @DeleteMapping(value = Routes.KICK_VOLUNTEER_FORM_ACTIVITY)
-    public void kickVolunteerFromActivity(@RequestParam Integer requestId, Principal principal) {
-        volunteerActivityRequestService.kickVolunteerFromActivity(requestId, principal);
+    public void kickVolunteerFromActivity(@RequestParam String volunteerUsername,
+                                          @RequestParam Integer activityId, Principal principal) {
+        volunteerActivityRequestService.kickVolunteerFromActivity(volunteerUsername, activityId, principal);
     }
 
     @ResponseStatus(value = HttpStatus.OK)

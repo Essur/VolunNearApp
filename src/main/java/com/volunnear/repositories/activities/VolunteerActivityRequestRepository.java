@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface VolunteerActivityRequestRepository extends JpaRepository<VolunteerActivityRequest, Integer> {
     VolunteerActivityRequest findById(int id);
     void deleteByActivityIdAndVolunteer(int activityId, Volunteer volunteer);
+    Optional<VolunteerActivityRequest> findByVolunteerUsernameAndActivityId(String username, Integer activityId);
     Optional<VolunteerActivityRequest> findByActivityIdAndVolunteer_Username(Integer activityId, String username);
     List<VolunteerActivityRequest> findAllByVolunteerAndStatusLike(Volunteer volunteer, ActivityRequestStatus status);
     List<VolunteerActivityRequest> findAllByActivityInAndStatusLike(List<Activity> activities, ActivityRequestStatus status);

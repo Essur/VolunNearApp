@@ -70,13 +70,13 @@ public class VolunteerActivityRequestService {
     }
 
     @Transactional
-    public void kickVolunteerFromActivity(Integer requestId, Principal organizationPrincipal) {
-        Optional<VolunteerActivityRequest> request = requestRepository.findById(requestId);
+    public void kickVolunteerFromActivity(String volunteerUsername, Integer activityId, Principal organizationPrincipal) {
+        Optional<VolunteerActivityRequest> request = requestRepository.findByVolunteerUsernameAndActivityId(volunteerUsername,activityId);
         if (request.isEmpty()) {
-            throw new DataNotFoundException("Request with id " + requestId + " was not found");
+            throw new DataNotFoundException("Request for user with username " + volunteerUsername + " not found");
         }
         if (!organizationService.isUserAreOrganization(organizationPrincipal.getName()) ||
-            activityService.isActivityBelongToOrganization(request.get().getActivity(), organizationPrincipal)) {
+            !activityService.isActivityBelongToOrganization(request.get().getActivity(), organizationPrincipal)) {
             throw new BadUserCredentialsException("Bad user credentials, you are not organization");
         }
         activityService.deleteVolunteerFromActivity(request.get().getActivity(), request.get().getVolunteer());

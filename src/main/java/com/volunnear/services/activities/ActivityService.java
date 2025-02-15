@@ -4,10 +4,7 @@ import com.volunnear.dtos.ActivityNotificationDTO;
 import com.volunnear.dtos.requests.AddActivityRequest;
 import com.volunnear.dtos.requests.NearbyActivitiesRequest;
 import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
-import com.volunnear.dtos.response.ActivitiesDTO;
-import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.dtos.response.ActivityInfoDTO;
-import com.volunnear.dtos.response.OrganizationResponseDTO;
+import com.volunnear.dtos.response.*;
 import com.volunnear.entitiy.activities.*;
 import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.infos.Volunteer;
@@ -220,6 +217,24 @@ public class ActivityService {
         return getActivityInfoDTO(activitiesByActivityId.get());
     }
 
+    public List<VolunteerInActivityInfo> getAllVolunteersInCurrentActivity(Integer activityId, Principal principal) {
+        if (!activitiesRepository.existsByOrganization_UsernameAndActivity_Id(principal.getName(), activityId)) {
+            throw new BadUserCredentialsException("Invalid credentials, try re-login");
+        }
+        List<VolunteersInActivity> allByActivityId = volunteersInActivityRepository.findAllByActivity_Id(activityId);
+        if (allByActivityId.isEmpty()) {
+            throw new DataNotFoundException("List of volunteers in that activity are empty");
+        }
+        
+        return allByActivityId.stream().map(volunteersInActivity -> new VolunteerInActivityInfo(
+                volunteersInActivity.getVolunteer().getEmail(),
+                volunteersInActivity.getVolunteer().getUsername(),
+                volunteersInActivity.getVolunteer().getFirstName(),
+                volunteersInActivity.getVolunteer().getLastName(),
+                volunteersInActivity.getDateOfEntry()
+        )).toList();
+    }
+
     /**
      * Methods to convert entities from DB to DTO for response
      */
@@ -314,5 +329,6 @@ public class ActivityService {
                 activity.getKindOfActivity()
         );
     }
+
 
 }

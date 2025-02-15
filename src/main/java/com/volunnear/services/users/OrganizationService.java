@@ -89,6 +89,14 @@ public class OrganizationService {
         }
     }
 
+    public Integer getOrganizationId(Principal principal) {
+        Optional<Organization> organizationByUsername = findOrganizationByUsername(principal.getName());
+        if (organizationByUsername.isEmpty()) {
+            throw new BadUserCredentialsException("Bad credentials, try re-login");
+        }
+        return organizationByUsername.get().getId();
+    }
+
     public Optional<Organization> findOrganizationByUsername(String username) {
         return organizationRepository.findOrganizationByUsername(username);
     }
@@ -133,4 +141,6 @@ public class OrganizationService {
         logger.info("------------------------------------");
         organizationRepository.save(organization);
     }
+
+
 }

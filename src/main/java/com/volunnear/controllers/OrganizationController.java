@@ -59,6 +59,12 @@ public class OrganizationController {
         return activityService.getMyActivities(organizationProfile);
     }
 
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_ORGANIZATION_ID)
+    public Integer getOrganizationId(Principal principal) {
+        return organizationService.getOrganizationId(principal);
+    }
+
     @Operation(summary = "Delete organization profile", description = "Successfully or not deleted user info")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data was successfully deleted",
