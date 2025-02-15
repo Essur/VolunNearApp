@@ -18,6 +18,7 @@ public class Routes {
      * Organization routes
      */
     public static final String ORGANIZATION = API_URL + "/organization";
+    public static final String GET_ORGANIZATION_ID = ORGANIZATION + "/my-id";
     public static final String GET_ALL_ORGANIZATIONS = ORGANIZATION + "/get-all";
     public static final String GET_ORGANIZATION_PROFILE = ORGANIZATION + "/my-profile";
     public static final String DELETE_ORGANIZATION_PROFILE = ORGANIZATION + "/delete-profile";
@@ -51,6 +52,7 @@ public class Routes {
     public static final String UPDATE_ACTIVITY_INFORMATION = ORGANIZATION + "/update-activity";
     public static final String ACTIVITY_CURRENT_ORGANIZATION = ORGANIZATION + "/get-activities";
     public static final String DELETE_CURRENT_ACTIVITY_BY_ID = ORGANIZATION + "/delete-activity";
+    public static final String GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY = API_URL + "/activity/volunteers-list";
 
     /**
      * Feedback routes

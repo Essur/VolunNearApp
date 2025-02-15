@@ -62,7 +62,9 @@ public class SecurityConfig {
                                 Routes.ADD_CHAT_LINK_FOR_ACTIVITY,
                                 Routes.APPROVE_VOLUNTEER_TO_ACTIVITY,
                                 Routes.KICK_VOLUNTEER_FORM_ACTIVITY,
-                                Routes.GET_ORGANIZATION_ACTIVITY_REQUESTS).hasRole("ORGANIZATION")
+                                Routes.GET_ORGANIZATION_ACTIVITY_REQUESTS,
+                                Routes.GET_ORGANIZATION_ID,
+                                Routes.GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY ).hasRole("ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());

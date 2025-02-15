@@ -7,6 +7,7 @@ import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.ActivityDTO;
 import com.volunnear.dtos.response.ActivityInfoDTO;
+import com.volunnear.dtos.response.VolunteerInActivityInfo;
 import com.volunnear.services.activities.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -54,8 +55,8 @@ public class ActivityController {
     })
     @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(value = Routes.ACTIVITY_CURRENT_ORGANIZATION)
-    public ActivitiesDTO getAllActivitiesOfCurrentOrganization(@RequestParam Integer id) {
-        return activityService.getAllActivitiesFromCurrentOrganization(id);
+    public ActivitiesDTO getAllActivitiesOfCurrentOrganization(@RequestParam Integer organizationId) {
+        return activityService.getAllActivitiesFromCurrentOrganization(organizationId);
     }
 
     @Operation(summary = "Get activities nearby", description = "Returns List<ActivitiesDTO>")
@@ -74,6 +75,12 @@ public class ActivityController {
     @GetMapping(value = Routes.GET_ACTIVITY_INFO)
     public ActivityInfoDTO getActivityInfo(@RequestParam Integer activityId) {
         return activityService.getActivityInfoByActivityId(activityId);
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY)
+    public List<VolunteerInActivityInfo> getAllVolunteersInCurrentActivity(@RequestParam Integer activityId, Principal principal) {
+        return activityService.getAllVolunteersInCurrentActivity(activityId, principal);
     }
 
     @ResponseStatus(value = HttpStatus.OK)

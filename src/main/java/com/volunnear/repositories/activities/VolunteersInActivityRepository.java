@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface VolunteersInActivityRepository extends JpaRepository<VolunteersInActivity, VolunteersInActivityId> {
     List<VolunteersInActivity> findAllVolunteersInActivityByVolunteer_Username(String username);
+    List<VolunteersInActivity> findAllByActivity_Id(Integer activityId);
 
     boolean existsByActivity_IdAndVolunteer_Username(Integer id, String username);
 
