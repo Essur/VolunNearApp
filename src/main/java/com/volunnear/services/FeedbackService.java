@@ -11,6 +11,7 @@ import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.repositories.infos.FeedbackRepository;
 import com.volunnear.services.users.OrganizationService;
 import com.volunnear.services.users.VolunteerService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,11 +29,14 @@ public class FeedbackService {
     private final OrganizationService organizationService;
     private final FeedbackRepository feedbackAboutOrganizationRepository;
 
+    @Transactional
     public Integer postFeedbackAboutOrganization(FeedbackRequest feedbackRequest, Principal principal) {
-        if (feedbackRequest.getRate() < 0 || feedbackRequest.getRate() > 10) {
-            throw new BadDataInRequestException("Bad value of rate, value should be between 0 and 10");
+        if (feedbackRequest.getRate() <= 0 || feedbackRequest.getRate() > 5) {
+            throw new BadDataInRequestException("Bad value of rate, value should be between 1 and 5");
         }
-
+        if (feedbackAboutOrganizationRepository.existsFeedbackByVolunteerFeedbackAuthorUsername(principal.getName())) {
+            throw new BadDataInRequestException("Request for that user already exist, you can modify it!");
+        }
         Volunteer volunteer = volunteerService.getVolunteerInfo(principal).get();
         Optional<Organization> organizationById = organizationService.findOrganizationById(feedbackRequest.getIdOfOrganization());
 
@@ -49,7 +53,12 @@ public class FeedbackService {
         return feedback.getId();
     }
 
+    @Transactional
     public FeedbackResponseDTO updateFeedbackInfoForCurrentOrganization(Integer idOfFeedback, FeedbackRequest feedbackRequest, Principal principal) {
+        if (feedbackRequest.getRate() <= 0 || feedbackRequest.getRate() > 5) {
+            throw new BadDataInRequestException("Bad value of rate, value should be between 1 and 5");
+        }
+
         Optional<Feedback> feedbackById = feedbackAboutOrganizationRepository.findById(idOfFeedback);
         if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
             throw new BadDataInRequestException("Feedback with id " + idOfFeedback + " was not found");
@@ -62,10 +71,11 @@ public class FeedbackService {
         return new FeedbackResponseDTO(feedbackAboutOrganization.getId() ,
                 feedbackAboutOrganization.getRate(),
                 feedbackAboutOrganization.getDescription(),
-                feedbackAboutOrganization.getVolunteerFeedbackAuthor().getLastName() + feedbackAboutOrganization.getVolunteerFeedbackAuthor().getFirstName(),
+                feedbackAboutOrganization.getVolunteerFeedbackAuthor().getLastName() + " " + feedbackAboutOrganization.getVolunteerFeedbackAuthor().getFirstName(),
                 principal.getName());
     }
 
+    @Transactional
     public void deleteFeedbackAboutOrganization(Integer idOfFeedback, Principal principal) {
         Optional<Feedback> feedbackById = feedbackAboutOrganizationRepository.findById(idOfFeedback);
         if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
@@ -79,13 +89,13 @@ public class FeedbackService {
         return getOrganizationResponseDTOMap(allFeedback);
     }
 
-    public  Map<OrganizationResponseDTO, List<FeedbackResponseDTO>> getFeedbacksAboutCurrentOrganization(Integer id) {
+    public  List<FeedbackResponseDTO> getFeedbacksAboutCurrentOrganization(Integer id) {
         List<Feedback> feedbackAboutOrganizationList =
                 feedbackAboutOrganizationRepository.findAllByTargetOrganization_Id(id);
         if (feedbackAboutOrganizationList.isEmpty()) {
             throw new DataNotFoundException("There is no feedback about that organization");
         }
-        return getOrganizationResponseDTOMap(feedbackAboutOrganizationList);
+        return getListOfFeedbacksDTO(feedbackAboutOrganizationList);
     }
 
     private Map<OrganizationResponseDTO, List<FeedbackResponseDTO>> getOrganizationResponseDTOMap(List<Feedback> allFeedback) {

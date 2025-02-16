@@ -8,4 +8,5 @@ import java.util.List;
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     List<Feedback> findAllByTargetOrganization_Id(Integer id);
     Feedback findFeedbackById(Integer id);
+    boolean existsFeedbackByVolunteerFeedbackAuthorUsername(String username);
 }
