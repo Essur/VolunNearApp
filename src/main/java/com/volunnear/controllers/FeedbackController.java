@@ -35,8 +35,8 @@ public class FeedbackController {
     })
     @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION)
-    public Map<OrganizationResponseDTO, List<FeedbackResponseDTO>> getFeedbacksAboutCurrentOrganization(@RequestParam Integer id) {
-        return feedbackService.getFeedbacksAboutCurrentOrganization(id);
+    public List<FeedbackResponseDTO> getFeedbacksAboutCurrentOrganization(@RequestParam Integer organizationId) {
+        return feedbackService.getFeedbacksAboutCurrentOrganization(organizationId);
     }
 
     @ResponseStatus(value = HttpStatus.CREATED)
