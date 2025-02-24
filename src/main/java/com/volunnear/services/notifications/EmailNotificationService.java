@@ -69,4 +69,9 @@ public class EmailNotificationService {
                         .getResponseDTOForSubscriptions(subscription.getOrganization())).collect(Collectors.toList());
     }
 
+    public void getNotificationSubscriptionStatus(Integer organizationId, Principal principal) {
+        if (!subscriptionRepository.existsByVolunteer_UsernameAndOrganization_Id(principal.getName(), organizationId)) {
+            throw new DataNotFoundException("Fail, you are not subscribed");
+        }
+    }
 }

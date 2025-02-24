@@ -34,14 +34,20 @@ public class NotificationsController {
     }
 
     @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_NOTIFICATION_SUBSCRIPTION_STATUS)
+    public void getNotificationSubscriptionStatus(@RequestParam Integer organizationId, Principal principal) {
+        emailNotificationService.getNotificationSubscriptionStatus(organizationId, principal);
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
     @PostMapping(Routes.SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
-    public void subscribeToNotificationsByIdOfOrganization(@RequestParam Integer idOfOrganization, Principal principal) {
-        emailNotificationService.subscribeToNotificationByIdOfOrganization(idOfOrganization, principal);
+    public void subscribeToNotificationsByIdOfOrganization(@RequestParam Integer organizationId, Principal principal) {
+        emailNotificationService.subscribeToNotificationByIdOfOrganization(organizationId, principal);
     }
 
     @ResponseStatus(value = HttpStatus.OK)
     @DeleteMapping(Routes.UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANIZATION)
-    public void unsubscribeFromNotificationsByIdOfOrganizations(@RequestParam Integer idOfOrganization, Principal principal) {
-        emailNotificationService.unsubscribeFromNotificationOfOrganization(idOfOrganization, principal);
+    public void unsubscribeFromNotificationsByIdOfOrganizations(@RequestParam Integer organizationId, Principal principal) {
+        emailNotificationService.unsubscribeFromNotificationOfOrganization(organizationId, principal);
     }
 }

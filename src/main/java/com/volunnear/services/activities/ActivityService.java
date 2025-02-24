@@ -98,9 +98,9 @@ public class ActivityService {
     /**
      * Activities by organization username from token
      */
-    public ActivitiesDTO getMyActivities(Organization organization) {
-        List<Activities> allByOrganizationUsername = activitiesRepository.findAllByOrganization_Username(organization.getUsername());
-        return activitiesFromEntityToDto(allByOrganizationUsername, organization);
+    public List<ActivityDTO> getMyActivities(Principal principal) {
+        List<Activities> allByOrganizationUsername = activitiesRepository.findAllByOrganization_Username(principal.getName());
+        return getListOfAllActivities(allByOrganizationUsername);
     }
 
     /**
@@ -179,8 +179,8 @@ public class ActivityService {
     }
 
     public boolean isActivityBelongToOrganization(Activity activity, Principal principal) {
-        Organization organizationProfile = organizationService.getOrganizationProfile(principal);
-        return activitiesRepository.existsByActivityAndOrganization(activity, organizationProfile);
+        OrganizationResponseDTO organizationProfile = organizationService.getOrganizationProfile(principal);
+        return activitiesRepository.existsByActivityAndOrganizationId(activity, organizationProfile.getId());
     }
 
     public List<ActivitiesDTO> getActivitiesOfVolunteer(Principal principal) {

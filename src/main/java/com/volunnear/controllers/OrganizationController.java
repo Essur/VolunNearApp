@@ -5,7 +5,6 @@ import com.volunnear.dtos.requests.RegistrationOrganizationRequest;
 import com.volunnear.dtos.requests.UpdateOrganizationInfoRequest;
 import com.volunnear.dtos.response.ActivitiesDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
-import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.services.activities.ActivityService;
 import com.volunnear.services.users.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,17 +45,16 @@ public class OrganizationController {
         return organizationService.getAllOrganizationsWithInfo();
     }
 
-    @Operation(summary = "Get all organizations", description = "Returns ActivitiesDTO")
+    @Operation(summary = "Get organization profile", description = "Returns OrganizationResponseDTO")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Activities dto",
-                    content = @Content(schema = @Schema(implementation = ActivitiesDTO.class))),
+            @ApiResponse(responseCode = "200", description = "OrganizationResponseDTO",
+                    content = @Content(schema = @Schema(implementation = OrganizationResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad token, try again!")
     })
     @ResponseStatus(value = HttpStatus.OK)
     @GetMapping(value = Routes.GET_ORGANIZATION_PROFILE)
-    public ActivitiesDTO getOrganizationProfile(Principal principal) {
-        Organization organizationProfile = organizationService.getOrganizationProfile(principal);
-        return activityService.getMyActivities(organizationProfile);
+    public OrganizationResponseDTO getOrganizationProfile(Principal principal) {
+        return organizationService.getOrganizationProfile(principal);
     }
 
     @ResponseStatus(value = HttpStatus.OK)
