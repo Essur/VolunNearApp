@@ -6,6 +6,7 @@ import com.volunnear.dtos.response.OrganizationResponseDTO;
 import com.volunnear.entitiy.infos.Organization;
 import com.volunnear.entitiy.users.AppUser;
 import com.volunnear.exception.BadUserCredentialsException;
+import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.activities.ActivitiesRepository;
 import com.volunnear.repositories.infos.OrganizationRepository;
@@ -35,8 +36,12 @@ public class OrganizationService {
 
     private final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
 
-    public Organization getOrganizationProfile(Principal principal) {
-        return organizationRepository.findOrganizationByUsername(principal.getName()).get();
+    public OrganizationResponseDTO getOrganizationProfile(Principal principal) {
+        Optional<Organization> organizationByUsername = organizationRepository.findOrganizationByUsername(principal.getName());
+        if (organizationByUsername.isEmpty()) {
+            throw new DataNotFoundException("Organization profile not found");
+        }
+        return getOrganizationResponseDTO(organizationByUsername.get());
     }
 
     public List<OrganizationResponseDTO> getAllOrganizationsWithInfo() {

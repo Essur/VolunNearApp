@@ -25,6 +25,7 @@ public class Routes {
     public static final String APPROVE_VOLUNTEER_TO_ACTIVITY = ORGANIZATION + "/approve-volunteer";
     public static final String KICK_VOLUNTEER_FORM_ACTIVITY = ORGANIZATION + "/kick-volunteer";
     public static final String GET_ORGANIZATION_ACTIVITY_REQUESTS = ORGANIZATION + "/my-requests";
+    public static final String GET_MY_ACTIVITIES_FOR_ORGANIZATION = ORGANIZATION + "/my-activities";
 
     /**
      * Volunteers routes
@@ -71,7 +72,8 @@ public class Routes {
     /**
      * Notifications routes
      */
-    public static final String NOTIFICATIONS = API_URL + "/notifications";
+    public static final String NOTIFICATIONS = API_URL + "/notification";
+    public static final String GET_NOTIFICATION_SUBSCRIPTION_STATUS = NOTIFICATIONS + "/status";
     public static final String GET_ALL_SUBSCRIPTIONS_OF_VOLUNTEER = NOTIFICATIONS + "/my-subscriptions";
     public static final String SUBSCRIBE_TO_NOTIFICATIONS_BY_ID_OF_ORGANIZATION = NOTIFICATIONS + "/subscribe";
     public static final String UNSUBSCRIBE_FROM_NOTIFICATIONS_BY_ID_OF_ORGANIZATION = NOTIFICATIONS + "/unsubscribe";

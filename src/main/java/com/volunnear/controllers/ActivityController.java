@@ -59,6 +59,12 @@ public class ActivityController {
         return activityService.getAllActivitiesFromCurrentOrganization(organizationId);
     }
 
+    @ResponseStatus(value = HttpStatus.OK)
+    @GetMapping(value = Routes.GET_MY_ACTIVITIES_FOR_ORGANIZATION)
+    public List<ActivityDTO> getActivitiesForOrganizationProfile(Principal principal) {
+        return activityService.getMyActivities(principal);
+    }
+
     @Operation(summary = "Get activities nearby", description = "Returns List<ActivitiesDTO>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Activities dto",
