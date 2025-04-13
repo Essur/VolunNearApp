@@ -2,7 +2,7 @@ package com.volunnear.services.notifications;
 
 import com.volunnear.dtos.ActivityNotificationDTO;
 import com.volunnear.dtos.response.ActivityDTO;
-import com.volunnear.entitiy.infos.VolunteersSubscription;
+import com.volunnear.entity.infos.VolunteersSubscription;
 import com.volunnear.events.ActivityCreationEvent;
 import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class EventMailSenderService {
         ActivityNotificationDTO notificationDTO = activityCreationEvent.getNotificationDTO();
         List<VolunteersSubscription> subscriptions = subscriptionRepository.findAllByOrganization_Id(notificationDTO.getOrganizationResponseDTO().getId());
         Map<String, String> usernameAndEmailMap = subscriptions.stream().collect(Collectors.toMap(
-                volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getUsername(),
+                volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getUser().getUsername(),
                 volunteerNotificationSubscription -> volunteerNotificationSubscription.getVolunteer().getEmail(),
                 (existingEmail, newEmail) -> existingEmail
         ));

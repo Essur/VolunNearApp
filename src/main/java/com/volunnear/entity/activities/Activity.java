@@ -1,4 +1,4 @@
-package com.volunnear.entitiy.activities;
+package com.volunnear.entity.activities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;

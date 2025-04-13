@@ -1,6 +1,6 @@
-package com.volunnear.entitiy.activities;
+package com.volunnear.entity.activities;
 
-import com.volunnear.entitiy.infos.Organization;
+import com.volunnear.entity.infos.Organization;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,6 +21,7 @@ import java.util.Objects;
 public class ActivitiesId implements Serializable {
     @Serial
     private static final long serialVersionUID = 3828002192702928374L;
+
     @NotNull
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "organization_id", nullable = false)

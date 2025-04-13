@@ -1,7 +1,7 @@
 package com.volunnear.services.security;
 
-import com.volunnear.entitiy.users.AppUser;
-import com.volunnear.entitiy.users.RefreshToken;
+import com.volunnear.entity.users.AppUser;
+import com.volunnear.entity.users.RefreshToken;
 import com.volunnear.exception.TokenRefreshException;
 import com.volunnear.repositories.users.AppUserRepository;
 import com.volunnear.repositories.users.RefreshTokenRepository;

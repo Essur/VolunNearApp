@@ -6,6 +6,8 @@ spring:
   jpa:
     open-in-view: false
     generate-ddl: true
+    hibernate:
+      ddl-auto: update
   mail:
     host: smtp.gmail.com
     port: 587
@@ -25,3 +27,9 @@ jwt:
   token:
     secret: "volun-near-app-2024"
     lifetime: 3600000
+  refreshToken:
+    lifetime: 5400000
+management:
+  metrics:
+    enable:
+      processor: false

@@ -1,4 +1,4 @@
-package com.volunnear.entitiy.infos;
+package com.volunnear.entity.infos;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -18,6 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Embeddable
 public class VolunteersSubscriptionId implements Serializable {
+    @Serial
     private static final long serialVersionUID = -3210833227201288785L;
     @NotNull
     @Column(name = "volunteer_id", nullable = false)

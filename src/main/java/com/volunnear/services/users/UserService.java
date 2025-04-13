@@ -1,6 +1,6 @@
 package com.volunnear.services.users;
 
-import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.entity.users.AppUser;
 import com.volunnear.repositories.users.AppUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

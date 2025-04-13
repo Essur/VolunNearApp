@@ -1,13 +1,14 @@
 package com.volunnear.repositories.activities;
 
-import com.volunnear.entitiy.activities.Activities;
-import com.volunnear.entitiy.activities.Activity;
+import com.volunnear.entity.activities.Activities;
+import com.volunnear.entity.activities.Activity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-
+@Repository
 public interface ActivitiesRepository extends JpaRepository<Activities, Integer> {
     Optional<Activities> findActivitiesByActivityId(Integer id);
     Optional<Activities> findActivitiesByActivity_Id(Integer activityId);
