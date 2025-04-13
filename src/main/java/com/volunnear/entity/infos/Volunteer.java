@@ -1,37 +1,40 @@
-package com.volunnear.entitiy.users;
+package com.volunnear.entity.infos;
 
+import com.volunnear.entity.users.AppUser;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.io.Serializable;
 import java.util.Objects;
-import java.util.Set;
 
+@Entity
+@Table(name = "volunteers")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "app_user")
-public class AppUser implements Serializable {
+@ToString
+@RequiredArgsConstructor
+public class Volunteer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "app_user_id")
+    @Column(name = "volunteer_id", nullable = false)
     private Integer id;
 
+    @OneToOne
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private AppUser user;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Size(max = 45)
+    @Column(name = "email", length = 45)
+    private String email;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+    @Size(max = 45)
+    @Column(name = "first_name", length = 45)
+    private String firstName;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "username"))
-    @Column(name = "role")
-    private Set<String> roles;
+    @Size(max = 45)
+    @Column(name = "last_name", length = 45)
+    private String lastName;
 
     @Override
     public final boolean equals(Object o) {
@@ -40,8 +43,8 @@ public class AppUser implements Serializable {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        AppUser appUser = (AppUser) o;
-        return getUsername() != null && Objects.equals(getUsername(), appUser.getUsername());
+        Volunteer volunteer = (Volunteer) o;
+        return getId() != null && Objects.equals(getId(), volunteer.getId());
     }
 
     @Override

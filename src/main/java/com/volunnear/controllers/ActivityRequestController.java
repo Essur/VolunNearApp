@@ -4,7 +4,7 @@ import com.volunnear.Routes;
 import com.volunnear.dtos.response.ActivityRequestInfoResponse;
 import com.volunnear.dtos.response.OrganizationActivityRequestInfoResponse;
 import com.volunnear.dtos.response.VolunteerActivityRequestStatus;
-import com.volunnear.entitiy.activities.VolunteerActivityRequest;
+import com.volunnear.entity.activities.VolunteerActivityRequest;
 import com.volunnear.services.activities.VolunteerActivityRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

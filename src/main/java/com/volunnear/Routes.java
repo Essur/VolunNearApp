@@ -86,6 +86,13 @@ public class Routes {
     public static final String ADD_CHAT_LINK_FOR_ACTIVITY = SOCIAL_NETWORKS + "/add-chat-link";
     public static final String GET_COMMUNITY_LINK_BY_ORGANIZATION = SOCIAL_NETWORKS + "/get-community-link";
 
+    /**
+     * Preferences routes
+     * */
+    public static final String RECOMMENDATIONS = API_URL + "/recommendations";
+    public static final String PREFERENCES  = API_URL + "/preferences";
+    public static final String ADD_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/add";
+
     public static final String[] SWAGGER_ENDPOINTS = {
             "api/v1/auth/**",
             "/v3/api-docs/**",

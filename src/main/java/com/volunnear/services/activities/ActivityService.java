@@ -5,9 +5,9 @@ import com.volunnear.dtos.requests.AddActivityRequest;
 import com.volunnear.dtos.requests.NearbyActivitiesRequest;
 import com.volunnear.dtos.requests.UpdateActivityInfoRequest;
 import com.volunnear.dtos.response.*;
-import com.volunnear.entitiy.activities.*;
-import com.volunnear.entitiy.infos.Organization;
-import com.volunnear.entitiy.infos.Volunteer;
+import com.volunnear.entity.activities.*;
+import com.volunnear.entity.infos.Organization;
+import com.volunnear.entity.infos.Volunteer;
 import com.volunnear.events.ActivityCreationEvent;
 import com.volunnear.exception.BadUserCredentialsException;
 import com.volunnear.exception.DataNotFoundException;
@@ -184,7 +184,7 @@ public class ActivityService {
     }
 
     public List<ActivitiesDTO> getActivitiesOfVolunteer(Principal principal) {
-        List<VolunteersInActivity> allByUser = volunteersInActivityRepository.findAllVolunteersInActivityByVolunteer_Username(principal.getName());
+        List<VolunteersInActivity> allByUser = volunteersInActivityRepository.findAllVolunteersInActivityByVolunteer_User_Username(principal.getName());
         Map<Volunteer, List<Activity>> volunteersActivity = allByUser.stream()
                 .collect(Collectors.groupingBy(VolunteersInActivity::getVolunteer, Collectors.mapping(VolunteersInActivity::getActivity, Collectors.toList())));
         List<Activities> activitiesWithOrg = new ArrayList<>();
@@ -228,7 +228,7 @@ public class ActivityService {
         
         return allByActivityId.stream().map(volunteersInActivity -> new VolunteerInActivityInfo(
                 volunteersInActivity.getVolunteer().getEmail(),
-                volunteersInActivity.getVolunteer().getUsername(),
+                volunteersInActivity.getVolunteer().getUser().getUsername(),
                 volunteersInActivity.getVolunteer().getFirstName(),
                 volunteersInActivity.getVolunteer().getLastName(),
                 volunteersInActivity.getDateOfEntry()

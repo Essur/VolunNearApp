@@ -1,12 +1,11 @@
 package com.volunnear.services.notifications;
 
 import com.volunnear.dtos.response.OrganizationResponseDTO;
-import com.volunnear.entitiy.infos.Organization;
-import com.volunnear.entitiy.infos.Volunteer;
-import com.volunnear.entitiy.infos.VolunteersSubscription;
-import com.volunnear.entitiy.infos.VolunteersSubscriptionId;
+import com.volunnear.entity.infos.Organization;
+import com.volunnear.entity.infos.Volunteer;
+import com.volunnear.entity.infos.VolunteersSubscription;
+import com.volunnear.entity.infos.VolunteersSubscriptionId;
 import com.volunnear.exception.BadDataInRequestException;
-import com.volunnear.exception.BadUserCredentialsException;
 import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.infos.VolunteersSubscriptionRepository;
@@ -35,13 +34,11 @@ public class EmailNotificationService {
         if (organizationById.isEmpty()) {
             throw new BadDataInRequestException("Organization with id " + idOfOrganization + " not found");
         }
-        if (subscriptionRepository.existsByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization)) {
+        if (subscriptionRepository.existsByVolunteer_User_UsernameAndOrganization_Id(principal.getName(), idOfOrganization)) {
             throw new UserAlreadyExistsException("Fail, you are already subscribed");
         }
         Optional<Volunteer> volunteerInfo = volunteerService.getVolunteerInfo(principal);
-        if (!volunteerService.isUserAreVolunteer(volunteerInfo.get())) {
-            throw new BadUserCredentialsException("You are not volunteer");
-        }
+
         VolunteersSubscription subscription = new VolunteersSubscription();
         subscription.setId(new VolunteersSubscriptionId(volunteerInfo.get().getId(), organizationById.get().getId()));
         subscription.setOrganization(organizationById.get());
@@ -51,15 +48,15 @@ public class EmailNotificationService {
 
     public void unsubscribeFromNotificationOfOrganization(Integer idOfOrganization, Principal principal) {
         Optional<VolunteersSubscription> subscriptionById = subscriptionRepository.
-                findByVolunteer_UsernameAndOrganization_Id(principal.getName(), idOfOrganization);
-        if (subscriptionById.isEmpty() || !principal.getName().equals(subscriptionById.get().getVolunteer().getUsername())) {
+                findByVolunteer_User_UsernameAndOrganization_Id(principal.getName(), idOfOrganization);
+        if (subscriptionById.isEmpty() || !principal.getName().equals(subscriptionById.get().getVolunteer().getUser().getUsername())) {
             throw new BadDataInRequestException("You are not subscribed to organization with id " + idOfOrganization);
         }
         subscriptionRepository.delete(subscriptionById.get());
     }
 
     public List<OrganizationResponseDTO> getAllSubscriptionsOfVolunteer(Principal principal) {
-        List<VolunteersSubscription> allByUserVolunteerUsername = subscriptionRepository.findAllByVolunteer_Username(principal.getName());
+        List<VolunteersSubscription> allByUserVolunteerUsername = subscriptionRepository.findAllByVolunteer_User_Username(principal.getName());
         if (allByUserVolunteerUsername.isEmpty()) {
             throw new DataNotFoundException("List of subscriptions is empty!");
         }
@@ -70,7 +67,7 @@ public class EmailNotificationService {
     }
 
     public void getNotificationSubscriptionStatus(Integer organizationId, Principal principal) {
-        if (!subscriptionRepository.existsByVolunteer_UsernameAndOrganization_Id(principal.getName(), organizationId)) {
+        if (!subscriptionRepository.existsByVolunteer_User_UsernameAndOrganization_Id(principal.getName(), organizationId)) {
             throw new DataNotFoundException("Fail, you are not subscribed");
         }
     }

@@ -1,6 +1,6 @@
-package com.volunnear.entitiy.activities;
+package com.volunnear.entity.activities;
 
-import com.volunnear.entitiy.infos.Organization;
+import com.volunnear.entity.infos.Organization;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

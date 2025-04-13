@@ -3,9 +3,9 @@ package com.volunnear.services;
 import com.volunnear.dtos.requests.FeedbackRequest;
 import com.volunnear.dtos.response.FeedbackResponseDTO;
 import com.volunnear.dtos.response.OrganizationResponseDTO;
-import com.volunnear.entitiy.infos.Feedback;
-import com.volunnear.entitiy.infos.Organization;
-import com.volunnear.entitiy.infos.Volunteer;
+import com.volunnear.entity.infos.Feedback;
+import com.volunnear.entity.infos.Organization;
+import com.volunnear.entity.infos.Volunteer;
 import com.volunnear.exception.BadDataInRequestException;
 import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.repositories.infos.FeedbackRepository;
@@ -34,7 +34,7 @@ public class FeedbackService {
         if (feedbackRequest.getRate() <= 0 || feedbackRequest.getRate() > 5) {
             throw new BadDataInRequestException("Bad value of rate, value should be between 1 and 5");
         }
-        if (feedbackAboutOrganizationRepository.existsFeedbackByVolunteerFeedbackAuthorUsername(principal.getName())) {
+        if (feedbackAboutOrganizationRepository.existsFeedbackByVolunteerFeedbackAuthor_User_Username(principal.getName())) {
             throw new BadDataInRequestException("Request for that user already exist, you can modify it!");
         }
         Volunteer volunteer = volunteerService.getVolunteerInfo(principal).get();
@@ -60,7 +60,7 @@ public class FeedbackService {
         }
 
         Optional<Feedback> feedbackById = feedbackAboutOrganizationRepository.findById(idOfFeedback);
-        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
+        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUser().getUsername())) {
             throw new BadDataInRequestException("Feedback with id " + idOfFeedback + " was not found");
         }
         Feedback feedbackAboutOrganization = feedbackById.get();
@@ -78,7 +78,7 @@ public class FeedbackService {
     @Transactional
     public void deleteFeedbackAboutOrganization(Integer idOfFeedback, Principal principal) {
         Optional<Feedback> feedbackById = feedbackAboutOrganizationRepository.findById(idOfFeedback);
-        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUsername())) {
+        if (feedbackById.isEmpty() || !principal.getName().equals(feedbackById.get().getVolunteerFeedbackAuthor().getUser().getUsername())) {
             throw new DataNotFoundException("Invalid id of feedback");
         }
         feedbackAboutOrganizationRepository.deleteById(idOfFeedback);
@@ -117,8 +117,7 @@ public class FeedbackService {
                 feedbackAboutOrganization.getDescription(),
                 feedbackAboutOrganization.getVolunteerFeedbackAuthor().getFirstName()
                         + " " + feedbackAboutOrganization.getVolunteerFeedbackAuthor().getLastName(),
-                feedbackAboutOrganization.getVolunteerFeedbackAuthor().getUsername()
-
+                feedbackAboutOrganization.getVolunteerFeedbackAuthor().getUser().getUsername()
         )).toList();
     }
 

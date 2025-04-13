@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 Routes.DELETE_MY_JOIN_ACTIVITY_REQUEST,
                                 Routes.LEAVE_FROM_ACTIVITY_BY_VOLUNTEER,
                                 Routes.GET_VOLUNTEER_ACTIVITY_REQUEST_STATUS_INFO,
-                                Routes.GET_VOLUNTEER_ACTIVITY_REQUESTS).hasRole("VOLUNTEER")
+                                Routes.GET_VOLUNTEER_ACTIVITY_REQUESTS,
+                                Routes.ADD_PREFERENCE_TO_VOLUNTEER).hasRole("VOLUNTEER")
 
                         .requestMatchers(Routes.UPDATE_ORGANIZATION_PROFILE,
                                 Routes.ADD_ACTIVITY,

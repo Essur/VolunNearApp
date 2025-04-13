@@ -3,8 +3,8 @@ package com.volunnear.services.users;
 import com.volunnear.dtos.requests.RegistrationVolunteerRequest;
 import com.volunnear.dtos.requests.UpdateVolunteerInfoRequest;
 import com.volunnear.dtos.response.VolunteerProfileResponseDTO;
-import com.volunnear.entitiy.infos.Volunteer;
-import com.volunnear.entitiy.users.AppUser;
+import com.volunnear.entity.infos.Volunteer;
+import com.volunnear.entity.users.AppUser;
 import com.volunnear.exception.BadUserCredentialsException;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.repositories.infos.VolunteerRepository;
@@ -47,17 +47,17 @@ public class VolunteerService {
         appUser.setRoles(Set.of("VOLUNTEER"));
         appUserRepository.save(appUser);
 
-        addAdditionalInfo(registrationVolunteerRequest);
+        addAdditionalInfo(registrationVolunteerRequest, appUser);
         return appUser.getId();
     }
 
     public VolunteerProfileResponseDTO getVolunteerProfile(Principal principal) {
-        Volunteer volunteerByUsername = volunteerRepository.findByUsername(principal.getName()).get();
+        Volunteer volunteerByUsername = volunteerRepository.findByUser_Username(principal.getName()).get();
 
         VolunteerProfileResponseDTO profileResponse = new VolunteerProfileResponseDTO();
 
         profileResponse.setEmail(volunteerByUsername.getEmail());
-        profileResponse.setUsername(volunteerByUsername.getUsername());
+        profileResponse.setUsername(volunteerByUsername.getUser().getUsername());
         profileResponse.setFirstName(volunteerByUsername.getFirstName());
         profileResponse.setLastName(volunteerByUsername.getLastName());
         profileResponse.setActivitiesDTO(activityService.getActivitiesOfVolunteer(principal));
@@ -67,11 +67,11 @@ public class VolunteerService {
 
 
     public Optional<Volunteer> getVolunteerInfo(Principal principal) {
-        return volunteerRepository.findByUsername(principal.getName());
+        return volunteerRepository.findByUser_Username(principal.getName());
     }
 
     public VolunteerProfileResponseDTO updateVolunteerInfo(UpdateVolunteerInfoRequest updateVolunteerInfoRequest, Principal principal) {
-        Optional<Volunteer> byUsername = volunteerRepository.findByUsername(principal.getName());
+        Optional<Volunteer> byUsername = volunteerRepository.findByUser_Username(principal.getName());
         if (byUsername.isEmpty()) {
             throw new BadUserCredentialsException("Bad credentials, try re-login");
         }
@@ -86,7 +86,7 @@ public class VolunteerService {
 
     @Transactional
     public void deleteVolunteerProfile(Principal principal) {
-        Optional<Volunteer> volunteer = volunteerRepository.findByUsername(principal.getName());
+        Optional<Volunteer> volunteer = volunteerRepository.findByUser_Username(principal.getName());
         if (volunteer.isPresent()) {
             refreshTokenRepository.deleteByAppUser_Username(principal.getName());
             volunteerRepository.delete(volunteer.get());
@@ -96,13 +96,13 @@ public class VolunteerService {
         }
     }
 
-    public boolean isUserAreVolunteer(Volunteer volunteer) {
-        return volunteerRepository.existsByUsername(volunteer.getUsername());
+    public boolean isVolunteerExist (String username) {
+        return volunteerRepository.existsByUser_Username(username);
     }
 
-    private void addAdditionalInfo(RegistrationVolunteerRequest requestDTO) {
+    private void addAdditionalInfo(RegistrationVolunteerRequest requestDTO, AppUser appUser) {
         Volunteer volunteer = new Volunteer();
-        volunteer.setUsername(requestDTO.getUsername());
+        volunteer.setUser(appUser);
         volunteer.setFirstName(requestDTO.getFirstName());
         volunteer.setLastName(requestDTO.getLastName());
         volunteer.setEmail(requestDTO.getEmail());

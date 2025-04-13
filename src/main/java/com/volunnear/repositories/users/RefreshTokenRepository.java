@@ -1,12 +1,14 @@
 package com.volunnear.repositories.users;
 
 
-import com.volunnear.entitiy.users.AppUser;
-import com.volunnear.entitiy.users.RefreshToken;
+import com.volunnear.entity.users.AppUser;
+import com.volunnear.entity.users.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer> {
     Optional<RefreshToken> findByToken(String token);
     Optional<RefreshToken> findByAppUser(AppUser user);

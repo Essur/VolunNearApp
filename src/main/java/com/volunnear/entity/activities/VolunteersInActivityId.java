@@ -1,4 +1,4 @@
-package com.volunnear.entitiy.activities;
+package com.volunnear.entity.activities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -18,6 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Embeddable
 public class VolunteersInActivityId implements Serializable {
+    @Serial
     private static final long serialVersionUID = 3119455508186986644L;
     @NotNull
     @Column(name = "volunteer_id", nullable = false)

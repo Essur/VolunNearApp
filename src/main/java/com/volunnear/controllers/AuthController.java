@@ -5,7 +5,7 @@ import com.volunnear.dtos.jwt.JwtRefreshRequest;
 import com.volunnear.dtos.jwt.JwtRefreshTokenResponse;
 import com.volunnear.dtos.jwt.JwtRequest;
 import com.volunnear.dtos.jwt.JwtResponse;
-import com.volunnear.entitiy.users.RefreshToken;
+import com.volunnear.entity.users.RefreshToken;
 import com.volunnear.exception.TokenRefreshException;
 import com.volunnear.services.security.AuthService;
 import com.volunnear.services.security.RefreshTokenService;

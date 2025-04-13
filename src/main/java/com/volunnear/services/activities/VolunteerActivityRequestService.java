@@ -4,10 +4,10 @@ import com.volunnear.ActivityRequestStatus;
 import com.volunnear.dtos.VolunteerInfo;
 import com.volunnear.dtos.response.ActivityRequestInfoResponse;
 import com.volunnear.dtos.response.OrganizationActivityRequestInfoResponse;
-import com.volunnear.entitiy.activities.Activities;
-import com.volunnear.entitiy.activities.Activity;
-import com.volunnear.entitiy.activities.VolunteerActivityRequest;
-import com.volunnear.entitiy.infos.Volunteer;
+import com.volunnear.entity.activities.Activities;
+import com.volunnear.entity.activities.Activity;
+import com.volunnear.entity.activities.VolunteerActivityRequest;
+import com.volunnear.entity.infos.Volunteer;
 import com.volunnear.exception.BadUserCredentialsException;
 import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.repositories.activities.VolunteerActivityRequestRepository;
@@ -71,7 +71,7 @@ public class VolunteerActivityRequestService {
 
     @Transactional
     public void kickVolunteerFromActivity(String volunteerUsername, Integer activityId, Principal organizationPrincipal) {
-        Optional<VolunteerActivityRequest> request = requestRepository.findByVolunteerUsernameAndActivityId(volunteerUsername,activityId);
+        Optional<VolunteerActivityRequest> request = requestRepository.findByVolunteer_User_UsernameAndActivityId(volunteerUsername,activityId);
         if (request.isEmpty()) {
             throw new DataNotFoundException("Request for user with username " + volunteerUsername + " not found");
         }
@@ -110,7 +110,7 @@ public class VolunteerActivityRequestService {
                 r.getActivity().getId(),
                 r.getActivity().getTitle(),
                 new VolunteerInfo(r.getVolunteer().getEmail(),
-                        r.getVolunteer().getUsername(),
+                        r.getVolunteer().getUser().getUsername(),
                         r.getVolunteer().getFirstName(),
                         r.getVolunteer().getLastName()))).toList();
     }
@@ -131,7 +131,7 @@ public class VolunteerActivityRequestService {
     }
 
     public VolunteerActivityRequest getRequestStatusInfo(Integer activityId, Principal principal) {
-        Optional<VolunteerActivityRequest> activityRequest = requestRepository.findByActivityIdAndVolunteer_Username(activityId, principal.getName());
+        Optional<VolunteerActivityRequest> activityRequest = requestRepository.findByActivityIdAndVolunteer_User_Username(activityId, principal.getName());
         return activityRequest.orElseThrow(() -> new DataNotFoundException("Is no request for that activity"));
     }
 }
