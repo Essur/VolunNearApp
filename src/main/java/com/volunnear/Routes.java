@@ -92,6 +92,7 @@ public class Routes {
     public static final String RECOMMENDATIONS = API_URL + "/recommendations";
     public static final String PREFERENCES  = API_URL + "/preferences";
     public static final String ADD_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/add";
+    public static final String UPDATE_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/update";
 
     public static final String[] SWAGGER_ENDPOINTS = {
             "api/v1/auth/**",
