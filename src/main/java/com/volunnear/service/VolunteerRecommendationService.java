@@ -1,5 +1,6 @@
 package com.volunnear.service;
 
+import com.volunnear.dto.VolunteerPreferenceDTO;
 import com.volunnear.dto.requests.AddPreferenceRequest;
 import com.volunnear.entity.infos.VolunteerPreference;
 import com.volunnear.exception.DataNotFoundException;
@@ -44,7 +45,7 @@ public class VolunteerRecommendationService {
     }
 
     @Transactional
-    public VolunteerPreference updateVolunteerPreferences (AddPreferenceRequest preferenceRequest, Principal principal) {
+    public VolunteerPreferenceDTO updateVolunteerPreferences (AddPreferenceRequest preferenceRequest, Principal principal) {
         if (!volunteerService.isVolunteerExist(principal.getName())){
             throw new DataNotFoundException("Volunteer does not exist");
         }
@@ -52,6 +53,12 @@ public class VolunteerRecommendationService {
         volunteerPreference.setLocation(geometryFactory.createPoint(new Coordinate(preferenceRequest.getLatitude(), preferenceRequest.getLongitude())));
         volunteerPreferenceRepository.save(volunteerPreference);
         log.info("Volunteer preference updated: {}", volunteerPreference);
-        return volunteerPreference;
+        return new VolunteerPreferenceDTO(
+                volunteerPreference.getId(),
+                volunteerPreference.getVolunteer().getUser().getUsername(),
+                volunteerPreference.getLocation().getX(),
+                volunteerPreference.getLocation().getY());
     }
+
+    
 }

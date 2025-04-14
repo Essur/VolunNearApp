@@ -3,6 +3,7 @@ package com.volunnear.entity.activities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.locationtech.jts.geom.Point;
 
 import java.time.Instant;
 
@@ -41,4 +42,6 @@ public class Activity {
     @Column(name = "date_of_place")
     private Instant dateOfPlace;
 
+    @Column(name = "location", columnDefinition = "geometry(Point, 4326)", nullable = false)
+    private Point location;
 }
