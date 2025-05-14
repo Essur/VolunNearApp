@@ -15,9 +15,14 @@ import com.volunnear.repository.activities.ActivitiesRepository;
 import com.volunnear.repository.activities.ActivityRepository;
 import com.volunnear.repository.activities.VolunteersInActivityRepository;
 import com.volunnear.service.user.OrganizationService;
+import com.volunnear.util.ActivityWithDistance;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,13 +35,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ActivityService {
     private final ActivityRepository activityRepository;
     private final OrganizationService organizationService;
     private final ApplicationEventPublisher eventPublisher;
     private final ActivitiesRepository activitiesRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
     private final VolunteersInActivityRepository volunteersInActivityRepository;
 
     @Transactional
@@ -52,6 +60,7 @@ public class ActivityService {
                 .country(activityRequest.getCountry())
                 .city(activityRequest.getCity())
                 .kindOfActivity(activityRequest.getKindOfActivity())
+                .location(geometryFactory.createPoint(new Coordinate(activityRequest.getLatitude(), activityRequest.getLongitude())))
                 .dateOfPlace(Instant.now()).build();
         activityRepository.save(activity);
 
@@ -166,6 +175,7 @@ public class ActivityService {
         activity.setCountry(activityRequest.getCountry());
         activity.setCity(activityRequest.getCity());
         activity.setDateOfPlace(Instant.now());
+        activity.setLocation(geometryFactory.createPoint(new Coordinate(activityRequest.getLatitude(), activityRequest.getLongitude())));
         activity.setKindOfActivity(activityRequest.getKindOfActivity());
         activityRepository.save(activity);
         sendNotificationForSubscribers(activity, "Updated");
@@ -233,6 +243,37 @@ public class ActivityService {
                 volunteersInActivity.getVolunteer().getLastName(),
                 volunteersInActivity.getDateOfEntry()
         )).toList();
+    }
+
+    public List<ActivityWithDistance> getActivitiesInRadiusByLocation(Integer radius, Point location) {
+        List<Object[]> results = activityRepository.findNearbyActivities(location.getX(), location.getY(), radius);
+
+        return results.stream()
+                .map(result -> {
+                    Activity activity = mapToActivity(result);
+                    Double distance = (Double) result[result.length - 1];
+                    return new ActivityWithDistance(activity, distance);
+                }).toList();
+    }
+
+    private Activity mapToActivity(Object[] result) {
+        Activity activity = new Activity();
+        activity.setId((Integer) result[0]);
+        activity.setCity((String) result[1]);
+        activity.setCountry((String) result[2]);
+        activity.setDateOfPlace((Instant) result[3]);
+        activity.setDescription((String) result[4]);
+        activity.setKindOfActivity((String) result[5]);
+        activity.setLocation((Point) result[6]);
+        activity.setTitle((String) result[7]);
+        return activity;
+    }
+
+    public List<ActivitiesDTO> getInfoAboutOrganizations(List<ActivityWithDistance> activitiesInRadiusByLocation) {
+        List<Activities> allByActivityIn = activitiesRepository.findAllByActivityIn(activitiesInRadiusByLocation.stream()
+                .map(ActivityWithDistance::getActivity)
+                .collect(Collectors.toList()));
+        return getListOfActivitiesDTOForResponse(allByActivityIn);
     }
 
     /**
@@ -329,6 +370,5 @@ public class ActivityService {
                 activity.getKindOfActivity()
         );
     }
-
 
 }

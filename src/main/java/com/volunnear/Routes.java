@@ -35,10 +35,7 @@ public class Routes {
     public static final String JOIN_TO_ACTIVITY_REQUEST = VOLUNTEER + "/join-to-activity";
     public static final String DELETE_MY_JOIN_ACTIVITY_REQUEST = VOLUNTEER + "/delete-my-activity-request";
     public static final String DELETE_VOLUNTEER_PROFILE = VOLUNTEER + "/delete-profile";
-    public static final String DELETE_PREFERENCE_BY_ID = VOLUNTEER + "/delete-preference";
-    public static final String SET_VOLUNTEERS_PREFERENCES = VOLUNTEER + "/set-preferences";
     public static final String LEAVE_FROM_ACTIVITY_BY_VOLUNTEER = VOLUNTEER + "/leave-activity";
-    public static final String GET_RECOMMENDATION_BY_PREFERENCES = VOLUNTEER + "/recommendations";
     public static final String GET_VOLUNTEER_ACTIVITY_REQUESTS = VOLUNTEER + "/my-requests";
 
     /**
@@ -89,10 +86,11 @@ public class Routes {
     /**
      * Preferences routes
      * */
-    public static final String RECOMMENDATIONS = API_URL + "/recommendations";
     public static final String PREFERENCES  = API_URL + "/preferences";
     public static final String ADD_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/add";
     public static final String UPDATE_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/update";
+
+    public static final String GET_RECOMMENDATION_BY_PREFERENCES = VOLUNTEER + "/recommendations";
 
     public static final String[] SWAGGER_ENDPOINTS = {
             "api/v1/auth/**",
