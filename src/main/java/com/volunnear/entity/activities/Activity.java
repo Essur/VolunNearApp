@@ -14,6 +14,7 @@ import java.time.Instant;
 @Table(name = "activity")
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

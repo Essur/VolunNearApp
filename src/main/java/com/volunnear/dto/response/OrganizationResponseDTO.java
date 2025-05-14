@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrganizationResponseDTO {
     private Integer id;
-    private String nameOfOrganization;
+    private String organizationName;
     private String country;
     private String city;
     private String address;

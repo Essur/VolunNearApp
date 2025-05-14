@@ -25,6 +25,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class VolunteerActivityRequestService {
     private final EntityManager entityManager;
     private final ActivityService activityService;

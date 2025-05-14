@@ -13,4 +13,6 @@ public class UpdateActivityInfoRequest {
     private String country;
     private String city;
     private String kindOfActivity;
+    private double latitude;
+    private double longitude;
 }
