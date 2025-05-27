@@ -27,9 +27,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(Routes.REGISTER_ROUTE_SECURITY + "/**",
                                 Routes.LOGIN,
+                                Routes.GET_ACTIVITY_INFO,
+                                Routes.GET_ALL_ACTIVITIES,
                                 Routes.GET_ALL_ORGANIZATIONS,
                                 Routes.ACTIVITY_CURRENT_ORGANIZATION,
-                                Routes.GET_ALL_ACTIVITIES_WITH_ALL_ORGANIZATIONS,
                                 Routes.GET_FEEDBACKS_OF_ALL_ORGANIZATIONS,
                                 Routes.GET_FEEDBACKS_FROM_CURRENT_ORGANIZATION,
                                 Routes.GET_CHAT_LINK_BY_ACTIVITY,
@@ -44,7 +45,15 @@ public class SecurityConfig {
                                 Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANIZATION,
                                 Routes.DELETE_FEEDBACK_ABOUT_ORGANIZATION,
                                 Routes.LOCATION + "/**",
-                                Routes.NOTIFICATIONS + "/**").hasRole("VOLUNTEER")
+                                Routes.NOTIFICATIONS + "/**",
+                                Routes.JOIN_TO_ACTIVITY_REQUEST,
+                                Routes.DELETE_MY_JOIN_ACTIVITY_REQUEST,
+                                Routes.LEAVE_FROM_ACTIVITY_BY_VOLUNTEER,
+                                Routes.GET_VOLUNTEER_ACTIVITY_REQUEST_STATUS_INFO,
+                                Routes.GET_VOLUNTEER_ACTIVITY_REQUESTS,
+                                Routes.ADD_PREFERENCE_TO_VOLUNTEER,
+                                Routes.UPDATE_PREFERENCE_TO_VOLUNTEER,
+                                Routes.GET_RECOMMENDATION_BY_PREFERENCES).hasRole("VOLUNTEER")
 
                         .requestMatchers(Routes.UPDATE_ORGANIZATION_PROFILE,
                                 Routes.ADD_ACTIVITY,
@@ -53,7 +62,12 @@ public class SecurityConfig {
                                 Routes.DELETE_CURRENT_ACTIVITY_BY_ID,
                                 Routes.GET_ORGANIZATION_PROFILE,
                                 Routes.ADD_COMMUNITY_LINK,
-                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY).hasRole("ORGANIZATION")
+                                Routes.ADD_CHAT_LINK_FOR_ACTIVITY,
+                                Routes.APPROVE_VOLUNTEER_TO_ACTIVITY,
+                                Routes.KICK_VOLUNTEER_FORM_ACTIVITY,
+                                Routes.GET_ORGANIZATION_ACTIVITY_REQUESTS,
+                                Routes.GET_ORGANIZATION_ID,
+                                Routes.GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY ).hasRole("ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(Customizer.withDefaults());

@@ -1,18 +1,24 @@
 version: '3'
 
 services:
-  mysql:
-    image: mysql:latest
-    restart: always
+  postgres:
+    image: postgis/postgis:16-3.4
     environment:
-      MYSQL_ROOT_PASSWORD: 12345password
-      MYSQL_DATABASE: volun_near_app_db
+      POSTGRES_DB: volun_near_app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: ["postgres", "-c", "shared_preload_libraries=postgis"]
+
 
   spring-boot-app:
-    restart: on-failure
     build:
       context: .
+    restart: on-failure
     depends_on:
-      - mysql
+      - postgres
     ports:
       - "8080:8080"
