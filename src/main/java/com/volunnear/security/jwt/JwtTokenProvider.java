@@ -24,9 +24,10 @@ public class JwtTokenProvider {
     private Long jwtLifetime;
     private final UserService userService;
 
-    public String createToken(UserDetails userDetails) {
+    public String createToken(UserDetails userDetails, Long userId) {
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
         claims.put("roles", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
+        claims.put("id" , userId);
 
         Date now = new Date();
         Date expireTime = new Date(now.getTime() + jwtLifetime);

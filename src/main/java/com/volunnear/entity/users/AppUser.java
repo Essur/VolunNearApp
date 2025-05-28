@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,19 +15,25 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@ToString
 @Table(name = "app_user")
 public class AppUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "app_user_id")
-    private Integer id;
-
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime created;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "username"))

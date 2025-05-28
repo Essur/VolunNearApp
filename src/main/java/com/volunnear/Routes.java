@@ -5,13 +5,15 @@ public class Routes {
     private static final String API_URL = "/api/v1";
 
     /**
-     * Users management
+     * Users registration and login
      */
-    public static final String LOGIN = API_URL + "/login";
-    public static final String REFRESH_TOKEN = API_URL + "/refresh-token";
-    public static final String REGISTER_ROUTE_SECURITY = API_URL + "/registration";
-    public static final String REGISTER_VOLUNTEER = API_URL + "/registration/volunteer";
-    public static final String REGISTER_ORGANIZATION = API_URL + "/registration/organization";
+    private static final String AUTH = API_URL + "/auth";
+    public static final String LOGIN = AUTH + "/login";
+    public static final String REFRESH_TOKEN = AUTH + "/refresh-token";
+    public static final String REGISTER = AUTH + "/register";
+
+    public static final String REGISTER_VOLUNTEER = REGISTER + "/volunteer";
+    public static final String REGISTER_ORGANIZATION = REGISTER + "/organization";
     public static final String UPDATE_VOLUNTEER_PROFILE = API_URL + "/update/volunteer";
     public static final String UPDATE_ORGANIZATION_PROFILE = API_URL + "/update/organization";
     /**
@@ -85,8 +87,8 @@ public class Routes {
 
     /**
      * Preferences routes
-     * */
-    public static final String PREFERENCES  = API_URL + "/preferences";
+     */
+    public static final String PREFERENCES = API_URL + "/preferences";
     public static final String ADD_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/add";
     public static final String UPDATE_PREFERENCE_TO_VOLUNTEER = PREFERENCES + "/update";
 

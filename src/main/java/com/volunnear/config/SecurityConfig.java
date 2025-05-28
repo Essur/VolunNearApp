@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(Routes.REGISTER_ROUTE_SECURITY + "/**",
+                        .requestMatchers(Routes.REGISTER + "/**",
                                 Routes.LOGIN,
                                 Routes.GET_ACTIVITY_INFO,
                                 Routes.GET_ALL_ACTIVITIES,

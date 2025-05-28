@@ -25,12 +25,12 @@ public class AuthService {
             throw new AuthErrorException("Incorrect login or password");
         }
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
-        return jwtTokenProvider.createToken(userDetails);
+        return jwtTokenProvider.createToken(userDetails, getUserIdByUsername(authRequest.getUsername()));
     }
 
-    public String recreateToken(String username){
+    public String recreateToken(String username) {
         UserDetails userDetails = userService.loadUserByUsername(username);
-        return jwtTokenProvider.createToken(userDetails);
+        return jwtTokenProvider.createToken(userDetails, getUserIdByUsername(username));
     }
 
     public String getAuthorities(String token) {
@@ -39,5 +39,9 @@ public class AuthService {
 
     public String getUsernameByToken(String token) {
         return jwtTokenProvider.getUsernameFromToken(token);
+    }
+
+    private Long getUserIdByUsername(String username) {
+        return userService.findAppUserByUsername(username).orElseThrow().getId();
     }
 }
