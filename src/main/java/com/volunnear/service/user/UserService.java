@@ -5,7 +5,7 @@ import com.volunnear.dto.request.user.RegisterAppUserDTO;
 import com.volunnear.entity.users.AppUser;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.mapper.user.AppUserMapper;
-import com.volunnear.repository.users.AppUserRepository;
+import com.volunnear.repository.user.AppUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +20,13 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-    private final AppUserMapper appUserMapper;
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser appUser = appUserRepository.findAppUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
                 String.format("User with " + username + " not found")
@@ -43,13 +42,16 @@ public class UserService implements UserDetailsService {
         return appUserRepository.findAppUserByUsername(username);
     }
 
-    @Transactional
+    public boolean existsByUsername(String username) {
+        return appUserRepository.existsByUsername(username);
+    }
+
     public Long registerAppUser(RegisterAppUserDTO requestDto, UserRole role) {
         if (appUserRepository.existsByUsernameOrEmail(requestDto.getUsername(), requestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with username " + requestDto.getUsername() + " already exists");
         }
         log.info("Register AppUser request: {}", requestDto);
-        AppUser user = appUserMapper
+        AppUser user = AppUserMapper.mapper
                 .toEntity(requestDto, role == UserRole.VOLUNTEER ? "VOLUNTEER" : "ORGANIZATION");
 
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));

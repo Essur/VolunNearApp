@@ -1,4 +1,4 @@
-package com.volunnear.repository.users;
+package com.volunnear.repository.user;
 
 import com.volunnear.entity.users.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface AppUserRepository extends JpaRepository<AppUser, Integer> {
     Optional<AppUser> findAppUserByUsername(String username);
     boolean existsByUsernameOrEmail(String username, String email);
+    boolean existsByUsername(String username);
 }

@@ -3,8 +3,8 @@ package com.volunnear.service.security;
 import com.volunnear.entity.users.AppUser;
 import com.volunnear.entity.users.RefreshToken;
 import com.volunnear.exception.TokenRefreshException;
-import com.volunnear.repository.users.AppUserRepository;
-import com.volunnear.repository.users.RefreshTokenRepository;
+import com.volunnear.repository.user.AppUserRepository;
+import com.volunnear.repository.user.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class RefreshTokenService {
     @Value("${jwt.refreshToken.lifetime}")
@@ -42,7 +43,6 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
-    @Transactional
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.deleteByToken(token.getToken());

@@ -1,4 +1,4 @@
-package com.volunnear.repository.users;
+package com.volunnear.repository.user;
 
 
 import com.volunnear.entity.users.AppUser;

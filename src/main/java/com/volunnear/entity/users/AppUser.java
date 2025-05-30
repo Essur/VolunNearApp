@@ -1,11 +1,12 @@
 package com.volunnear.entity.users;
 
+import com.volunnear.entity.profile.VolunteerProfile;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,12 +34,19 @@ public class AppUser implements Serializable {
     private String email;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime created;
+    private LocalDate created;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "username"))
     @Column(name = "role")
     private Set<String> roles;
+
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private VolunteerProfile volunteerProfile;
+
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RefreshToken refreshToken;
+
 
     @Override
     public final boolean equals(Object o) {
