@@ -46,12 +46,10 @@ public class UserService implements UserDetailsService {
         if (appUserRepository.existsByUsernameOrEmail(requestDto.getUsername(), requestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with username " + requestDto.getUsername() + " already exists");
         }
-        log.info("Register AppUser request: {}", requestDto);
         AppUser user = AppUserMapper.mapper
                 .toEntity(requestDto, role == UserRole.VOLUNTEER ? "VOLUNTEER" : "ORGANIZATION");
 
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-        log.info("Register AppUser response: {}", user);
         appUserRepository.save(user);
         return user.getId();
     }

@@ -42,13 +42,13 @@ public class AppUser implements Serializable {
     @Column(name = "role")
     private Set<String> roles;
 
-    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private VolunteerProfile volunteerProfile;
 
-    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private OrganizationProfile organizationProfile;
 
-    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private RefreshToken refreshToken;
 
 

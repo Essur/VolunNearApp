@@ -8,14 +8,25 @@ import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 
-
 @Component
 @RequiredArgsConstructor
-public class PrincipalUtils {
+public class AppUserUtils {
     private final UserService userService;
 
     public AppUser getUserFromPrincipal(Principal principal) {
         return userService.findAppUserByUsername(principal.getName())
                 .orElseThrow(() -> new BadUserCredentialsException("User with username" + principal.getName() + " not found"));
+    }
+
+    public void deleteAppUserByPrincipal(Principal principal) {
+        userService.deleteAppUser(principal.getName());
+    }
+
+    public boolean hasVolunteerProfile(AppUser user) {
+        return user.getVolunteerProfile() != null;
+    }
+
+    public boolean hasOrganizationProfile(AppUser user) {
+        return user.getOrganizationProfile() != null;
     }
 }
