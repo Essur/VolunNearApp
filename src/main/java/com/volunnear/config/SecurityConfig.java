@@ -1,6 +1,7 @@
 package com.volunnear.config;
 
 import com.volunnear.Routes;
+import com.volunnear.security.jwt.JwtAuthEntryPoint;
 import com.volunnear.security.jwt.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
@@ -67,9 +69,10 @@ public class SecurityConfig {
                                 Routes.KICK_VOLUNTEER_FORM_ACTIVITY,
                                 Routes.GET_ORGANIZATION_ACTIVITY_REQUESTS,
                                 Routes.GET_ORGANIZATION_ID,
-                                Routes.GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY ).hasRole("ORGANIZATION")
+                                Routes.GET_VOLUNTEERS_FROM_CURRENT_ACTIVITY).hasRole("ORGANIZATION")
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
                 .logout(Customizer.withDefaults());
         http.sessionManagement(sessionManagement ->
                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

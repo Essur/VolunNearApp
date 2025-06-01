@@ -4,16 +4,19 @@ import com.volunnear.service.user.UserService;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
@@ -57,8 +60,13 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userService.loadUserByUsername(getUsernameFromToken(token));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        try {
+            UserDetails userDetails = userService.loadUserByUsername(getUsernameFromToken(token));
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        } catch (UsernameNotFoundException ex) {
+            log.warn("Authentication failed: {}", ex.getMessage());
+            return null;
+        }
     }
 
 
