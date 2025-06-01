@@ -10,6 +10,7 @@ import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.mapper.profile.VolunteerProfileMapper;
 import com.volunnear.repository.profile.VolunteerProfileRepository;
 import com.volunnear.service.user.UserService;
+import com.volunnear.util.PrincipalUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,11 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class VolunteerService {
     private final UserService userService;
+    private final PrincipalUtils principalUtils;
     private final VolunteerProfileRepository volunteerProfileRepository;
 
     public VolunteerProfileResponseDTO createVolunteerProfile(VolunteerProfileSaveRequestDTO createRequest, Principal principal) {
-        AppUser appUser = userService.findAppUserByUsername(principal.getName())
-                .orElseThrow(() -> new BadUserCredentialsException("User with username" + principal.getName() + " not found"));
+        AppUser appUser = principalUtils.getUserFromPrincipal(principal);
         if (volunteerProfileRepository.existsByAppUser_Username(appUser.getUsername())) {
             throw new UserAlreadyExistsException("Volunteer profile with username " + appUser.getUsername() + " already exists, try update profile");
         }
@@ -37,9 +38,7 @@ public class VolunteerService {
     }
 
     public VolunteerProfileResponseDTO updateVolunteerProfile(VolunteerProfileSaveRequestDTO editRequest, Principal principal) {
-        AppUser appUser = userService.findAppUserByUsername(principal.getName())
-                .orElseThrow(() -> new BadUserCredentialsException("User with username" + principal.getName() + " not found"));
-
+        AppUser appUser = principalUtils.getUserFromPrincipal(principal);
         VolunteerProfile profile = volunteerProfileRepository.findByAppUser_Username(appUser.getUsername())
                 .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
 
