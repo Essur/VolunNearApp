@@ -1,5 +1,6 @@
 package com.volunnear.entity.users;
 
+import com.volunnear.entity.profile.OrganizationProfile;
 import com.volunnear.entity.profile.VolunteerProfile;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,6 +44,9 @@ public class AppUser implements Serializable {
 
     @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private VolunteerProfile volunteerProfile;
+
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private OrganizationProfile organizationProfile;
 
     @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private RefreshToken refreshToken;

@@ -16,23 +16,23 @@ import java.security.Principal;
 public class VolunteerController {
     private final VolunteerService volunteerService;
 
-    @PostMapping(value = Routes.CREATE_VOLUNTEER_PROFILE)
-    public VolunteerProfileResponseDTO createVolunteerProfile(@Valid @RequestBody VolunteerProfileSaveRequestDTO createRequest, Principal principal) {
+    @PostMapping(value = Routes.VOLUNTEER_PROFILE)
+    public VolunteerProfileResponseDTO createVolunteerProfile(@RequestBody @Valid VolunteerProfileSaveRequestDTO createRequest, Principal principal) {
         return volunteerService.createVolunteerProfile(createRequest, principal);
     }
 
-    @PutMapping(value = Routes.UPDATE_VOLUNTEER_PROFILE)
-    public VolunteerProfileResponseDTO updateVolunteerProfile(@Valid @RequestBody VolunteerProfileSaveRequestDTO updateRequest, Principal principal) {
+    @PutMapping(value = Routes.VOLUNTEER_PROFILE)
+    public VolunteerProfileResponseDTO updateVolunteerProfile(@RequestBody @Valid VolunteerProfileSaveRequestDTO updateRequest, Principal principal) {
         return volunteerService.updateVolunteerProfile(updateRequest, principal);
     }
 
-    @GetMapping(value = Routes.GET_VOLUNTEER_PROFILE)
+    @GetMapping(value = Routes.VOLUNTEER_PROFILE)
     public VolunteerProfileResponseDTO getVolunteerProfile(Principal principal) {
         return volunteerService.getVolunteerProfile(principal);
     }
 
     @ResponseStatus(value = HttpStatus.OK)
-    @DeleteMapping(value = Routes.DELETE_VOLUNTEER_PROFILE)
+    @DeleteMapping(value = Routes.VOLUNTEER_PROFILE)
     public void deleteVolunteerProfile(Principal principal) {
         volunteerService.deleteVolunteerProfile(principal);
     }

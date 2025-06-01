@@ -42,7 +42,6 @@ public class SecurityConfig {
                         .requestMatchers(Routes.REFRESH_TOKEN).hasAnyRole("VOLUNTEER", "ORGANIZATION")
 
                         .requestMatchers(Routes.VOLUNTEER + "/**",
-                                Routes.UPDATE_VOLUNTEER_PROFILE,
                                 Routes.POST_FEEDBACK_ABOUT_ORGANIZATION,
                                 Routes.UPDATE_FEEDBACK_FOR_CURRENT_ORGANIZATION,
                                 Routes.DELETE_FEEDBACK_ABOUT_ORGANIZATION,
@@ -57,7 +56,7 @@ public class SecurityConfig {
                                 Routes.UPDATE_PREFERENCE_TO_VOLUNTEER,
                                 Routes.GET_RECOMMENDATION_BY_PREFERENCES).hasRole("VOLUNTEER")
 
-                        .requestMatchers(Routes.UPDATE_ORGANIZATION_PROFILE,
+                        .requestMatchers(
                                 Routes.ADD_ACTIVITY,
                                 Routes.GET_MY_ACTIVITIES,
                                 Routes.UPDATE_ACTIVITY_INFORMATION,
