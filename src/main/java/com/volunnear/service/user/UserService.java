@@ -42,10 +42,6 @@ public class UserService implements UserDetailsService {
         return appUserRepository.findAppUserByUsername(username);
     }
 
-    public boolean existsByUsername(String username) {
-        return appUserRepository.existsByUsername(username);
-    }
-
     public Long registerAppUser(RegisterAppUserDTO requestDto, UserRole role) {
         if (appUserRepository.existsByUsernameOrEmail(requestDto.getUsername(), requestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with username " + requestDto.getUsername() + " already exists");
@@ -58,5 +54,9 @@ public class UserService implements UserDetailsService {
         log.info("Register AppUser response: {}", user);
         appUserRepository.save(user);
         return user.getId();
+    }
+
+    public void deleteAppUser(String username) {
+        appUserRepository.deleteByUsername(username);
     }
 }

@@ -24,8 +24,8 @@ public class Routes {
     public static final String ORGANIZATION = API_URL + "/organization";
     public static final String GET_ORGANIZATION_ID = ORGANIZATION + "/my-id";
     public static final String GET_ALL_ORGANIZATIONS = ORGANIZATION + "/get-all";
-    public static final String GET_ORGANIZATION_PROFILE = ORGANIZATION + "/my-profile";
-    public static final String DELETE_ORGANIZATION_PROFILE = ORGANIZATION + "/delete-profile";
+    public static final String GET_ORGANIZATION_PROFILE = ORGANIZATION + "/profile";
+    public static final String DELETE_ORGANIZATION_PROFILE = GET_ORGANIZATION_PROFILE + "/delete";
     public static final String APPROVE_VOLUNTEER_TO_ACTIVITY = ORGANIZATION + "/approve-volunteer";
     public static final String KICK_VOLUNTEER_FORM_ACTIVITY = ORGANIZATION + "/kick-volunteer";
     public static final String GET_ORGANIZATION_ACTIVITY_REQUESTS = ORGANIZATION + "/my-requests";
@@ -35,10 +35,10 @@ public class Routes {
      * Volunteers routes
      */
     public static final String VOLUNTEER = API_URL + "/volunteer";
-    public static final String GET_VOLUNTEER_PROFILE = VOLUNTEER + "/my-profile";
+    public static final String GET_VOLUNTEER_PROFILE = VOLUNTEER + "/profile";
     public static final String JOIN_TO_ACTIVITY_REQUEST = VOLUNTEER + "/join-to-activity";
     public static final String DELETE_MY_JOIN_ACTIVITY_REQUEST = VOLUNTEER + "/delete-my-activity-request";
-    public static final String DELETE_VOLUNTEER_PROFILE = VOLUNTEER + "/delete-profile";
+    public static final String DELETE_VOLUNTEER_PROFILE = GET_VOLUNTEER_PROFILE + "/delete";
     public static final String LEAVE_FROM_ACTIVITY_BY_VOLUNTEER = VOLUNTEER + "/leave-activity";
     public static final String GET_VOLUNTEER_ACTIVITY_REQUESTS = VOLUNTEER + "/my-requests";
 

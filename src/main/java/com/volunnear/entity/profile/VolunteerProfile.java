@@ -18,6 +18,7 @@ public class VolunteerProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ToString.Exclude
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "app_user_id", nullable = false, unique = true)
     private AppUser appUser;

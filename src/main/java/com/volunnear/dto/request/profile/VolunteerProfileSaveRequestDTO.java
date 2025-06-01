@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateVolunteerProfileInfoRequestDTO {
+public class VolunteerProfileSaveRequestDTO {
     @NotBlank
     private String firstName;
     @NotBlank
