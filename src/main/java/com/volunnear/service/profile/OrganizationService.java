@@ -36,19 +36,14 @@ public class OrganizationService {
     }
 
     public OrganizationProfileResponseDTO updateOrganizationProfile(OrganizationProfileSaveRequestDTO editRequest, Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
-        OrganizationProfile profile = organizationProfileRepository.findByAppUser_Username(appUser.getUsername())
-                .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
+        OrganizationProfile profile = findOrganizationProfileByPrincipal(principal);
         organizationProfileMapper.updateEntity(editRequest, profile);
         organizationProfileRepository.save(profile);
         return organizationProfileMapper.toDto(profile);
     }
 
     public OrganizationProfileResponseDTO getOrganizationProfile(Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
-        OrganizationProfile profile = organizationProfileRepository.findByAppUser_Username(appUser.getUsername())
-                .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
-        return organizationProfileMapper.toDto(profile);
+        return organizationProfileMapper.toDto(findOrganizationProfileByPrincipal(principal));
     }
 
     public void deleteOrganizationProfile(Principal principal) {
@@ -56,5 +51,11 @@ public class OrganizationService {
             throw new DataNotFoundException("Volunteer profile with username " + principal.getName() + " not found");
         }
         appUserUtils.deleteAppUserByPrincipal(principal);
+    }
+
+    public OrganizationProfile findOrganizationProfileByPrincipal(Principal principal) {
+        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
+        return organizationProfileRepository.findByAppUser_Username(appUser.getUsername())
+                .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
     }
 }
