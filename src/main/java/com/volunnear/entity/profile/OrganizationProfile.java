@@ -1,10 +1,14 @@
 package com.volunnear.entity.profile;
 
+import com.volunnear.entity.activity.Activity;
 import com.volunnear.entity.users.AppUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -42,4 +46,8 @@ public class OrganizationProfile {
 
     @Column(name = "website", nullable = false)
     private String website;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "organizationProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Activity> activities = new ArrayList<>();
 }

@@ -23,6 +23,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class VolunteerService {
     private final AppUserUtils appUserUtils;
+    private final VolunteerProfileMapper volunteerProfileMapper;
     private final VolunteerProfileRepository volunteerProfileRepository;
 
     public VolunteerProfileResponseDTO createVolunteerProfile(VolunteerProfileSaveRequestDTO createRequest, Principal principal) {
@@ -30,24 +31,24 @@ public class VolunteerService {
         if (appUserUtils.hasVolunteerProfile(appUser)) {
             throw new UserAlreadyExistsException("Volunteer profile with username " + appUser.getUsername() + " already exists, try update profile");
         }
-        VolunteerProfile volunteerProfile = VolunteerProfileMapper.mapper.toEntity(createRequest, appUser);
+        VolunteerProfile volunteerProfile = volunteerProfileMapper.toEntity(createRequest, appUser);
         volunteerProfileRepository.save(volunteerProfile);
-        return VolunteerProfileMapper.mapper.toDto(volunteerProfile);
+        return volunteerProfileMapper.toDto(volunteerProfile);
     }
 
     public VolunteerProfileResponseDTO updateVolunteerProfile(VolunteerProfileSaveRequestDTO editRequest, Principal principal) {
         AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
         VolunteerProfile profile = volunteerProfileRepository.findByAppUser_Username(appUser.getUsername())
                 .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
-        VolunteerProfileMapper.mapper.updateVolunteerProfileFromDto(editRequest, profile);
+        volunteerProfileMapper.updateEntity(editRequest, profile);
         volunteerProfileRepository.save(profile);
-        return VolunteerProfileMapper.mapper.toDto(profile);
+        return volunteerProfileMapper.toDto(profile);
     }
 
     public VolunteerProfileResponseDTO getVolunteerProfile(Principal principal) {
         VolunteerProfile profile = volunteerProfileRepository.findByAppUser_Username(principal.getName())
                 .orElseThrow(() -> new BadUserCredentialsException("User with username" + principal.getName() + " not found"));
-        return VolunteerProfileMapper.mapper.toDto(profile);
+        return volunteerProfileMapper.toDto(profile);
     }
 
     public void deleteVolunteerProfile(Principal principal) {
