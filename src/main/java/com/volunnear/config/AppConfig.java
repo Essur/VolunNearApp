@@ -1,5 +1,6 @@
 package com.volunnear.config;
 
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,5 +38,10 @@ public class AppConfig {
         props.put("mail.debug", "true");
 
         return javaMailSender;
+    }
+
+    @Bean
+    public GeometryFactory getGeometryFactory() {
+        return new GeometryFactory();
     }
 }
