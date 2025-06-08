@@ -33,11 +33,17 @@ public class Activity {
     private String shortDescription;
 
     @Lob
-    @Column(name = "description",columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "location", columnDefinition = "geometry(Point, 4326)", nullable = false)
     private Point location;
+    @Column(name = "country")
+    private String country;
+    @Column(name = "city")
+    private String city;
+    @Column(name = "address")
+    private String address;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)

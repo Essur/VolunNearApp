@@ -36,26 +36,32 @@ public class OrganizationService {
     }
 
     public OrganizationProfileResponseDTO updateOrganizationProfile(OrganizationProfileSaveRequestDTO editRequest, Principal principal) {
-        OrganizationProfile profile = findOrganizationProfileByPrincipal(principal);
+        OrganizationProfile profile = getOrganizationProfileByPrincipal(principal);
         organizationProfileMapper.updateEntity(editRequest, profile);
         organizationProfileRepository.save(profile);
         return organizationProfileMapper.toDto(profile);
     }
 
     public OrganizationProfileResponseDTO getOrganizationProfile(Principal principal) {
-        return organizationProfileMapper.toDto(findOrganizationProfileByPrincipal(principal));
+        return organizationProfileMapper.toDto(getOrganizationProfileByPrincipal(principal));
+    }
+
+    public OrganizationProfileResponseDTO getOrganizationProfileById(Long id) {
+        OrganizationProfile organizationProfile = organizationProfileRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("User with id " + id + " not found"));
+        return organizationProfileMapper.toDto(organizationProfile);
     }
 
     public void deleteOrganizationProfile(Principal principal) {
         if (!organizationProfileRepository.existsByAppUser_Username(principal.getName())) {
-            throw new DataNotFoundException("Volunteer profile with username " + principal.getName() + " not found");
+            throw new DataNotFoundException("Organization profile with username " + principal.getName() + " not found");
         }
         appUserUtils.deleteAppUserByPrincipal(principal);
     }
 
-    public OrganizationProfile findOrganizationProfileByPrincipal(Principal principal) {
+    public OrganizationProfile getOrganizationProfileByPrincipal(Principal principal) {
         AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
         return organizationProfileRepository.findByAppUser_Username(appUser.getUsername())
-                .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
+                .orElseThrow(() -> new DataNotFoundException("Organization profile with username " + appUser.getUsername() + " not found"));
     }
 }

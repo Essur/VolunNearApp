@@ -8,8 +8,9 @@ import com.volunnear.mapper.user.AppUserMapper;
 import org.mapstruct.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
-@Mapper(componentModel = "spring", imports = {LocalDate.class, AppUserMapper.class})
+@Mapper(componentModel = "spring", imports = {LocalDate.class, AppUserMapper.class, List.class})
 public interface OrganizationProfileMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appUser", source = "appUser")
@@ -17,6 +18,7 @@ public interface OrganizationProfileMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(OrganizationProfileSaveRequestDTO dto, @MappingTarget OrganizationProfile profile);
+
 
     @Mapping(target = "email", source = "organizationProfile.appUser.email")
     @Mapping(target = "username", source = "organizationProfile.appUser.username")

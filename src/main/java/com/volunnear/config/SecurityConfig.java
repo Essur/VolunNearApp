@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 Routes.REFRESH_TOKEN).hasAnyRole("VOLUNTEER", "ORGANIZATION")
 
                         .requestMatchers(HttpMethod.GET,
-                                Routes.ACTIVITIES + "/**").permitAll()
+                                Routes.ACTIVITIES + "/**",
+                                Routes.ORGANIZATION_ACTIVITIES_BY_ID).permitAll()
 
                         .requestMatchers(
                                 Routes.VOLUNTEER_PROFILE

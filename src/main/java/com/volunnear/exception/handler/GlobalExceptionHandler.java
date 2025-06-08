@@ -59,4 +59,10 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.badRequest().body(ErrorResponse.of("Validation failed", errors));
     }
+
+    @ExceptionHandler(GeoCodingException.class)
+    public ResponseEntity<ErrorResponse> handleGeoCodingException(GeoCodingException e) {
+        log.trace(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+    }
 }

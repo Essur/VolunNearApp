@@ -4,9 +4,11 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Properties;
 
@@ -43,5 +45,13 @@ public class AppConfig {
     @Bean
     public GeometryFactory getGeometryFactory() {
         return new GeometryFactory();
+    }
+
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder()
+                .baseUrl("https://nominatim.openstreetmap.org")
+                .defaultHeader(HttpHeaders.USER_AGENT, "volunnear-app/1.0")
+                .build();
     }
 }

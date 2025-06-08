@@ -3,7 +3,6 @@ package com.volunnear.dto.response.activity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -18,5 +17,7 @@ public class ActivityResponseDTO {
     private String description;
     private String schedule;
     private LocalDateTime startedAt;
-    private Point location;
+    private String country;
+    private String city;
+    private String address;
 }
