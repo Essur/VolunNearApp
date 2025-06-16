@@ -17,6 +17,6 @@ public class AddressDTO {
     private String address;
 
     public String toQuery() {
-        return String.join(", ", address, city, country);
+        return String.join(" ", address, city, country);
     }
 }

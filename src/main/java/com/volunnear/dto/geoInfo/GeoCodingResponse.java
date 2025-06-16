@@ -1,3 +1,7 @@
 package com.volunnear.dto.geoInfo;
 
-public record GeoCodingResponse(String lat, String lon, String display_name) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record GeoCodingResponse(@JsonProperty("lat") String lat,
+                                @JsonProperty("lon") String lon,
+                                @JsonProperty("display_name") String displayName) {}
