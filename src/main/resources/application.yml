@@ -17,6 +17,11 @@ spring:
       auth: true
       starttls-enable: true
     protocol: smtp
+  data:
+    redis:
+      port: 6380
+      password: ${REDIS_PASSWORD}
+      username: default
 server:
   forward-headers-strategy: framework
   error:
@@ -33,3 +38,8 @@ management:
   metrics:
     enable:
       processor: false
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.http: DEBUG
+    org.apache.http.wire: DEBUG

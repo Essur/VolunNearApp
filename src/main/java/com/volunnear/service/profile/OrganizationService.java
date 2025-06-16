@@ -8,7 +8,7 @@ import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.mapper.profile.OrganizationProfileMapper;
 import com.volunnear.repository.profile.OrganizationProfileRepository;
-import com.volunnear.util.AppUserUtils;
+import com.volunnear.service.user.CurrentUserFacade;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +21,13 @@ import java.security.Principal;
 @Transactional
 @RequiredArgsConstructor
 public class OrganizationService {
-    private final AppUserUtils appUserUtils;
+    private final CurrentUserFacade currentUserFacade;
     private final OrganizationProfileMapper organizationProfileMapper;
     private final OrganizationProfileRepository organizationProfileRepository;
 
     public OrganizationProfileResponseDTO createOrganizationProfile(OrganizationProfileSaveRequestDTO createRequest, Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
-        if (appUserUtils.hasOrganizationProfile(appUser)) {
+        AppUser appUser = currentUserFacade.getUserFromPrincipal(principal);
+        if (currentUserFacade.hasOrganizationProfile(appUser)) {
             throw new UserAlreadyExistsException("Organization profile with username " + appUser.getUsername() + " already exists, try update profile");
         }
         OrganizationProfile organizationProfile = organizationProfileMapper.toEntity(createRequest, appUser);
@@ -56,11 +56,11 @@ public class OrganizationService {
         if (!organizationProfileRepository.existsByAppUser_Username(principal.getName())) {
             throw new DataNotFoundException("Organization profile with username " + principal.getName() + " not found");
         }
-        appUserUtils.deleteAppUserByPrincipal(principal);
+        currentUserFacade.deleteAppUserByPrincipal(principal);
     }
 
     public OrganizationProfile getOrganizationProfileByPrincipal(Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
+        AppUser appUser = currentUserFacade.getUserFromPrincipal(principal);
         return organizationProfileRepository.findByAppUser_Username(appUser.getUsername())
                 .orElseThrow(() -> new DataNotFoundException("Organization profile with username " + appUser.getUsername() + " not found"));
     }

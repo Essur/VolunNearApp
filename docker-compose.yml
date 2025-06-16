@@ -4,14 +4,28 @@ services:
   postgres:
     image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_DB: volun_near_app_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345password
+      POSTGRES_DB: ${POSTGRE_DB}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - ./init-db:/docker-entrypoint-initdb.d
     command: ["postgres", "-c", "shared_preload_libraries=postgis"]
+
+
+  redis:
+    image: redis:latest
+    environment:
+      REDIS_USER: ${REDIS_USER}
+      REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redisdata:/data
+    restart: unless-stopped
+    tty: true
 
 
   spring-boot-app:

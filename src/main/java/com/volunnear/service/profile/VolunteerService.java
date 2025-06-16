@@ -9,7 +9,7 @@ import com.volunnear.exception.DataNotFoundException;
 import com.volunnear.exception.UserAlreadyExistsException;
 import com.volunnear.mapper.profile.VolunteerProfileMapper;
 import com.volunnear.repository.profile.VolunteerProfileRepository;
-import com.volunnear.util.AppUserUtils;
+import com.volunnear.service.user.CurrentUserFacade;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +22,13 @@ import java.security.Principal;
 @Transactional
 @RequiredArgsConstructor
 public class VolunteerService {
-    private final AppUserUtils appUserUtils;
+    private final CurrentUserFacade currentUserFacade;
     private final VolunteerProfileMapper volunteerProfileMapper;
     private final VolunteerProfileRepository volunteerProfileRepository;
 
     public VolunteerProfileResponseDTO createVolunteerProfile(VolunteerProfileSaveRequestDTO createRequest, Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
-        if (appUserUtils.hasVolunteerProfile(appUser)) {
+        AppUser appUser = currentUserFacade.getUserFromPrincipal(principal);
+        if (currentUserFacade.hasVolunteerProfile(appUser)) {
             throw new UserAlreadyExistsException("Volunteer profile with username " + appUser.getUsername() + " already exists, try update profile");
         }
         VolunteerProfile volunteerProfile = volunteerProfileMapper.toEntity(createRequest, appUser);
@@ -37,7 +37,7 @@ public class VolunteerService {
     }
 
     public VolunteerProfileResponseDTO updateVolunteerProfile(VolunteerProfileSaveRequestDTO editRequest, Principal principal) {
-        AppUser appUser = appUserUtils.getUserFromPrincipal(principal);
+        AppUser appUser = currentUserFacade.getUserFromPrincipal(principal);
         VolunteerProfile profile = volunteerProfileRepository.findByAppUser_Username(appUser.getUsername())
                 .orElseThrow(() -> new DataNotFoundException("Volunteer profile with username " + appUser.getUsername() + " not found"));
         volunteerProfileMapper.updateEntity(editRequest, profile);
@@ -55,6 +55,6 @@ public class VolunteerService {
         if (!volunteerProfileRepository.existsByAppUser_Username(principal.getName())) {
             throw new DataNotFoundException("Volunteer profile with username " + principal.getName() + " not found");
         }
-        appUserUtils.deleteAppUserByPrincipal(principal);
+        currentUserFacade.deleteAppUserByPrincipal(principal);
     }
 }

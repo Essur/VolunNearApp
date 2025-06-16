@@ -1,8 +1,7 @@
-package com.volunnear.util;
+package com.volunnear.service.user;
 
 import com.volunnear.entity.users.AppUser;
 import com.volunnear.exception.BadUserCredentialsException;
-import com.volunnear.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +9,7 @@ import java.security.Principal;
 
 @Component
 @RequiredArgsConstructor
-public class AppUserUtils {
+public class CurrentUserFacade {
     private final UserService userService;
 
     public AppUser getUserFromPrincipal(Principal principal) {
