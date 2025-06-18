@@ -1,6 +1,7 @@
 package com.volunnear.controller;
 
 import com.volunnear.Routes;
+import com.volunnear.annotation.Idempotent;
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.service.activity.ActivityService;
@@ -31,6 +32,7 @@ public class ActivityController {
         return activityService.getAllActivities();
     }
 
+    @Idempotent
     @PreAuthorize("hasRole('ORGANIZATION')")
     @PostMapping(value = Routes.ACTIVITIES)
     public ActivityResponseDTO createActivity(@Valid @RequestBody ActivitySaveRequestDTO requestDTO, Principal principal) {
