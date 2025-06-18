@@ -3,18 +3,19 @@ package com.volunnear.controller;
 import com.volunnear.Routes;
 import com.volunnear.annotation.Idempotent;
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
+import com.volunnear.dto.response.PagedResponseDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.service.activity.ActivityService;
 import com.volunnear.service.profile.OrganizationActivityFacade;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +29,11 @@ public class ActivityController {
     }
 
     @GetMapping(value = Routes.ACTIVITIES)
-    public List<ActivityResponseDTO> getAllActivities() {
-        return activityService.getAllActivities();
+    public PagedResponseDTO<ActivityResponseDTO> getAllActivities(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return activityService.getAllActivities(PageRequest.of(page, size));
     }
 
     @Idempotent

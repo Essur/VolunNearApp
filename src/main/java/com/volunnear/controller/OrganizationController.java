@@ -2,6 +2,7 @@ package com.volunnear.controller;
 
 import com.volunnear.Routes;
 import com.volunnear.dto.request.profile.OrganizationProfileSaveRequestDTO;
+import com.volunnear.dto.response.PagedResponseDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.dto.response.profile.OrganizationProfileResponseDTO;
 import com.volunnear.service.activity.ActivityService;
@@ -9,12 +10,12 @@ import com.volunnear.service.profile.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -47,13 +48,19 @@ public class OrganizationController {
     }
 
     @GetMapping(value = Routes.ORGANIZATION_ACTIVITIES_BY_PRINCIPAL)
-    public List<ActivityResponseDTO> getOrganizationActivitiesByPrincipal(Principal principal) {
-        return activityService.getActivitiesByPrincipal(principal);
+    public PagedResponseDTO<ActivityResponseDTO> getOrganizationActivitiesByPrincipal(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Principal principal) {
+        return activityService.getActivitiesByPrincipal(PageRequest.of(page, size), principal);
     }
 
     @GetMapping(value = Routes.ORGANIZATION_ACTIVITIES_BY_ID)
-    public List<ActivityResponseDTO> getActivitiesByOrganizationId(@PathVariable Long id) {
-        return activityService.getActivitiesByOrganizationId(id);
+    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByOrganizationId(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @PathVariable Long id) {
+        return activityService.getActivitiesByOrganizationId(PageRequest.of(page, size), id);
     }
 
     @ResponseStatus(value = HttpStatus.OK)

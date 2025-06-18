@@ -1,10 +1,12 @@
 package com.volunnear.service.activity;
 
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
+import com.volunnear.dto.response.PagedResponseDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.entity.activity.Activity;
 import com.volunnear.entity.profile.OrganizationProfile;
 import com.volunnear.exception.DataNotFoundException;
+import com.volunnear.mapper.PaginationMapper;
 import com.volunnear.mapper.activity.ActivityMapper;
 import com.volunnear.repository.activity.ActivityRepository;
 import com.volunnear.service.GeoService;
@@ -13,10 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -27,6 +30,7 @@ public class ActivityService {
     private final ActivityMapper activityMapper;
     private final GeometryFactory geometryFactory;
     private final ActivityRepository activityRepository;
+    private final PaginationMapper paginationMapper;
 
     public ActivityResponseDTO createActivity(ActivitySaveRequestDTO requestDTO, OrganizationProfile organizationProfile) {
         Point point = resolvePointFromRequest(requestDTO);
@@ -51,28 +55,19 @@ public class ActivityService {
         return activityMapper.toDto(activity);
     }
 
-    public List<ActivityResponseDTO> getActivitiesByOrganizationId(Long organizationId) {
-        List<Activity> activitiesByOrganizationId = activityRepository.findAllByOrganizationProfile_Id(organizationId);
-        if (activitiesByOrganizationId.isEmpty()) {
-            throw new DataNotFoundException("Activities by organization id " + organizationId + " not found");
-        }
-        return activitiesByOrganizationId.stream().map(activityMapper::toDto).toList();
+    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByOrganizationId(Pageable pageable, Long organizationId) {
+        Page<Activity> page = activityRepository.findAllByOrganizationProfile_Id(organizationId, pageable);
+        return paginationMapper.mapPage(page, activityMapper::toDto);
     }
 
-    public List<ActivityResponseDTO> getActivitiesByPrincipal(Principal principal) {
-        List<Activity> allByPrincipal = activityRepository.findAllByOrganizationProfile_AppUser_Username(principal.getName());
-        if (allByPrincipal.isEmpty()) {
-            throw new DataNotFoundException("Activities by principal not found");
-        }
-        return allByPrincipal.stream().map(activityMapper::toDto).toList();
+    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByPrincipal(Pageable pageable, Principal principal) {
+        Page<Activity> page = activityRepository.findAllByOrganizationProfile_AppUser_Username(principal.getName(), pageable);
+        return paginationMapper.mapPage(page, activityMapper::toDto);
     }
 
-    public List<ActivityResponseDTO> getAllActivities() {
-        List<Activity> allActivities = activityRepository.findAll();
-        if (allActivities.isEmpty()) {
-            throw new DataNotFoundException("No activities in our database");
-        }
-        return allActivities.stream().map(activityMapper::toDto).toList();
+    public PagedResponseDTO<ActivityResponseDTO> getAllActivities(Pageable pageable) {
+        Page<Activity> page = activityRepository.findAll(pageable);
+        return paginationMapper.mapPage(page, activityMapper::toDto);
     }
 
     public void deleteActivityById(Long id, Principal principal) {
