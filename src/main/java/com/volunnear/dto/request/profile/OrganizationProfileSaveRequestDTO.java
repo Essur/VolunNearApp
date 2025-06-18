@@ -1,5 +1,6 @@
 package com.volunnear.dto.request.profile;
 
+import com.volunnear.annotation.ValidPhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class OrganizationProfileSaveRequestDTO {
     @NotBlank
     private String address;
     @NotBlank
+    @ValidPhoneNumber
     private String phone;
     @NotBlank
     private String website;

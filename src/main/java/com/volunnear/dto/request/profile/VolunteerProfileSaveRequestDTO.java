@@ -1,6 +1,7 @@
 package com.volunnear.dto.request.profile;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.volunnear.annotation.ValidPhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,5 +25,6 @@ public class VolunteerProfileSaveRequestDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
     @NotBlank
+    @ValidPhoneNumber
     private String phone;
 }
