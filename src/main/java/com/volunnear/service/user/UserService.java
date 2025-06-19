@@ -23,6 +23,7 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+    private final AppUserMapper appUserMapper;
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -46,8 +47,7 @@ public class UserService implements UserDetailsService {
         if (appUserRepository.existsByUsernameOrEmail(requestDto.getUsername(), requestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with username " + requestDto.getUsername() + " already exists");
         }
-        AppUser user = AppUserMapper.mapper
-                .toEntity(requestDto, role == UserRole.VOLUNTEER ? "VOLUNTEER" : "ORGANIZATION");
+        AppUser user = appUserMapper.toEntity(requestDto, role == UserRole.VOLUNTEER ? "VOLUNTEER" : "ORGANIZATION");
 
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         appUserRepository.save(user);
