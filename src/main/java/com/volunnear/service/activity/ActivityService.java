@@ -2,6 +2,7 @@ package com.volunnear.service.activity;
 
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
 import com.volunnear.dto.response.PagedResponseDTO;
+import com.volunnear.dto.response.activity.ActivityCardDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.entity.activity.Activity;
 import com.volunnear.entity.profile.OrganizationProfile;
@@ -55,19 +56,19 @@ public class ActivityService {
         return activityMapper.toDto(activity);
     }
 
-    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByOrganizationId(Pageable pageable, Long organizationId) {
+    public PagedResponseDTO<ActivityCardDTO> getActivitiesByOrganizationId(Pageable pageable, Long organizationId) {
         Page<Activity> page = activityRepository.findAllByOrganizationProfile_Id(organizationId, pageable);
-        return paginationMapper.mapPage(page, activityMapper::toDto);
+        return paginationMapper.mapPage(page, activityMapper::toCardDto);
     }
 
-    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByPrincipal(Pageable pageable, Principal principal) {
+    public PagedResponseDTO<ActivityCardDTO> getActivitiesByPrincipal(Pageable pageable, Principal principal) {
         Page<Activity> page = activityRepository.findAllByOrganizationProfile_AppUser_Username(principal.getName(), pageable);
-        return paginationMapper.mapPage(page, activityMapper::toDto);
+        return paginationMapper.mapPage(page, activityMapper::toCardDto);
     }
 
-    public PagedResponseDTO<ActivityResponseDTO> getAllActivities(Pageable pageable) {
+    public PagedResponseDTO<ActivityCardDTO> getAllActivities(Pageable pageable) {
         Page<Activity> page = activityRepository.findAll(pageable);
-        return paginationMapper.mapPage(page, activityMapper::toDto);
+        return paginationMapper.mapPage(page, activityMapper::toCardDto);
     }
 
     public void deleteActivityById(Long id, Principal principal) {

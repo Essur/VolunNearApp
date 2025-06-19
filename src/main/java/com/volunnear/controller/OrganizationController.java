@@ -3,7 +3,7 @@ package com.volunnear.controller;
 import com.volunnear.Routes;
 import com.volunnear.dto.request.profile.OrganizationProfileSaveRequestDTO;
 import com.volunnear.dto.response.PagedResponseDTO;
-import com.volunnear.dto.response.activity.ActivityResponseDTO;
+import com.volunnear.dto.response.activity.ActivityCardDTO;
 import com.volunnear.dto.response.profile.OrganizationProfileResponseDTO;
 import com.volunnear.service.activity.ActivityService;
 import com.volunnear.service.profile.OrganizationService;
@@ -48,7 +48,7 @@ public class OrganizationController {
     }
 
     @GetMapping(value = Routes.ORGANIZATION_ACTIVITIES_BY_PRINCIPAL)
-    public PagedResponseDTO<ActivityResponseDTO> getOrganizationActivitiesByPrincipal(
+    public PagedResponseDTO<ActivityCardDTO> getOrganizationActivitiesByPrincipal(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Principal principal) {
@@ -56,7 +56,7 @@ public class OrganizationController {
     }
 
     @GetMapping(value = Routes.ORGANIZATION_ACTIVITIES_BY_ID)
-    public PagedResponseDTO<ActivityResponseDTO> getActivitiesByOrganizationId(
+    public PagedResponseDTO<ActivityCardDTO> getActivitiesByOrganizationId(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @PathVariable Long id) {

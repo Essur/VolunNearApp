@@ -1,6 +1,7 @@
 package com.volunnear.mapper.activity;
 
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
+import com.volunnear.dto.response.activity.ActivityCardDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.entity.activity.Activity;
 import com.volunnear.entity.profile.OrganizationProfile;
@@ -34,4 +35,7 @@ public interface ActivityMapper {
 
     @Mapping(target = "organizationId", source = "activity.organizationProfile.id")
     ActivityResponseDTO toDto(Activity activity);
+
+    @Mapping(target = "organizationId", source = "activity.organizationProfile.id")
+    ActivityCardDTO toCardDto(Activity activity);
 }

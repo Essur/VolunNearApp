@@ -4,6 +4,7 @@ import com.volunnear.Routes;
 import com.volunnear.annotation.Idempotent;
 import com.volunnear.dto.request.activity.ActivitySaveRequestDTO;
 import com.volunnear.dto.response.PagedResponseDTO;
+import com.volunnear.dto.response.activity.ActivityCardDTO;
 import com.volunnear.dto.response.activity.ActivityResponseDTO;
 import com.volunnear.service.activity.ActivityService;
 import com.volunnear.service.profile.OrganizationActivityFacade;
@@ -29,7 +30,7 @@ public class ActivityController {
     }
 
     @GetMapping(value = Routes.ACTIVITIES)
-    public PagedResponseDTO<ActivityResponseDTO> getAllActivities(
+    public PagedResponseDTO<ActivityCardDTO> getAllActivities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
